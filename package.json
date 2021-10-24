@@ -37,9 +37,15 @@
   "lint-staged": {
     "**/*.less": "stylelint --syntax less",
     "**/*.{js,jsx,ts,tsx}": "npm run lint-staged:js",
-    "**/*.{js,jsx,tsx,ts,less,md,json}": ["prettier --write"]
+    "**/*.{js,jsx,tsx,ts,less,md,json}": [
+      "prettier --write"
+    ]
   },
-  "browserslist": ["> 1%", "last 2 versions", "not ie <= 10"],
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 10"
+  ],
   "dependencies": {
     "@ant-design/icons": "^4.5.0",
     "@ant-design/pro-descriptions": "^1.6.8",
@@ -52,6 +58,8 @@
     "lodash": "^4.17.11",
     "moment": "^2.25.3",
     "omit.js": "^2.0.2",
+    "query-string": "^7.0.1",
+    "querystring-browser": "^1.0.4",
     "react": "^17.0.0",
     "react-dev-inspector": "^1.1.1",
     "react-dom": "^17.0.0",
@@ -78,7 +86,7 @@
     "@umijs/preset-react": "^1.8.17",
     "@umijs/yorkie": "^2.0.3",
     "carlo": "^0.9.46",
-    "cross-env": "^7.0.0",
+    "cross-env": "^7.0.3",
     "cross-port-killer": "^1.1.1",
     "detect-installer": "^1.0.1",
     "enzyme": "^3.11.0",
@@ -93,6 +101,10 @@
     "stylelint": "^13.0.0",
     "typescript": "^4.2.2"
   },
-  "engines": { "node": ">=10.0.0" },
-  "gitHooks": { "commit-msg": "fabric verify-commit" }
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "gitHooks": {
+    "commit-msg": "fabric verify-commit"
+  }
 }

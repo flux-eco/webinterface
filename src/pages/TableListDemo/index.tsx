@@ -1,36 +1,37 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, message, Input, Drawer } from 'antd';
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useIntl, FormattedMessage } from 'umi';
 import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { ModalForm, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
+import { BetaSchemaForm, ModalForm, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
 import type { ProDescriptionsItemProps } from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-import { rule, addRule, updateRule, removeRule } from '@/services/ant-design-pro/api';
-
+import { addUiPage, getTable } from '@/services/flux-eco-system-schema/api';
+import { history } from '@/.umi/core/history';
+	
 /**
  * @en-US Add node
  * @zh-CN 添加节点
  * @param fields
- */
-const handleAdd = async (fields: API.RuleListItem) => {
-  const hide = message.loading('正在添加');
-  try {
-    await addRule({ ...fields });
-    hide();
-    message.success('Added successfully');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Adding failed, please try again!');
-    return false;
-  }
-};
-
+*/
+  const handleAdd = async (fields: API.TableListItem) => { // Martin Table entry data definition
+    const hide = message.loading('loading');
+    try {
+      console.log(fields)
+      await addUiPage(fields);
+      hide();
+      message.success('Added successfully');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('Adding failed, please try again!');
+      return false;
+     }
+   };
 /**
  * @en-US Update node
  * @zh-CN 更新节点
@@ -40,11 +41,11 @@ const handleAdd = async (fields: API.RuleListItem) => {
 const handleUpdate = async (fields: FormValueType) => {
   const hide = message.loading('Configuring');
   try {
-    await updateRule({
-      name: fields.name,
-      desc: fields.desc,
-      key: fields.key,
-    });
+    // await updateRule({
+    //   name: fields.name,
+    //   desc: fields.desc,
+    //   key: fields.key,
+    // });
     hide();
 
     message.success('Configuration is successful');
@@ -62,13 +63,13 @@ const handleUpdate = async (fields: FormValueType) => {
  *
  * @param selectedRows
  */
-const handleRemove = async (selectedRows: API.RuleListItem[]) => {
-  const hide = message.loading('正在删除');
+const handleRemove = async (selectedRows: API.TableListItem[]) => {
+  const hide = message.loading('Loading');
   if (!selectedRows) return true;
   try {
-    await removeRule({
-      key: selectedRows.map((row) => row.key),
-    });
+    // await removeRule({
+    //   id: selectedRows.map((row) => row.id),
+    // });
     hide();
     message.success('Deleted successfully and will refresh soon');
     return true;
@@ -80,6 +81,26 @@ const handleRemove = async (selectedRows: API.RuleListItem[]) => {
 };
 
 const TableList: React.FC = () => {
+
+const location = history.location.pathname;
+// const [loading, setLoading] = useState(true);
+const [table, setTable] = useState<API.Table>({}); // Martin: Table definition object
+
+  const asyncFetch = async () => {
+    try {
+      const res: any = await getTable({'application': location}); // Martin get Table definition here
+      console.log(res);
+
+      setTable(res);
+      console.log(table);
+    } catch (err) {
+      console.error('Fetch Data failed ', err)
+    }
+  };
+
+  useEffect(() => { asyncFetch(); }, [location]);
+  // asyncFetch();
+
   /**
    * @en-US Pop-up window of new window
    * @zh-CN 新建窗口的弹窗
@@ -94,152 +115,24 @@ const TableList: React.FC = () => {
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
+  const [currentRow, setCurrentRow] = useState<API.TableListItem>();
+  const [selectedRowsState, setSelectedRows] = useState<API.TableListItem[]>([]);
 
   /**
    * @en-US International configuration
    * @zh-CN 国际化配置
    * */
   const intl = useIntl();
-
-  const columns: ProColumns<API.RuleListItem>[] = [
-    {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.updateForm.ruleName.nameLabel"
-          defaultMessage="Rule name"
-        />
-      ),
-      dataIndex: 'name',
-      tip: 'The rule name is the unique key',
-      render: (dom, entity) => {
-        return (
-          <a
-            onClick={() => {
-              setCurrentRow(entity);
-              setShowDetail(true);
-            }}
-          >
-            {dom}
-          </a>
-        );
-      },
-    },
-    {
-      title: <FormattedMessage id="pages.searchTable.titleDesc" defaultMessage="Description" />,
-      dataIndex: 'desc',
-      valueType: 'textarea',
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleCallNo"
-          defaultMessage="Number of service calls"
-        />
-      ),
-      dataIndex: 'callNo',
-      sorter: true,
-      hideInForm: true,
-      renderText: (val: string) =>
-        `${val}${intl.formatMessage({
-          id: 'pages.searchTable.tenThousand',
-          defaultMessage: ' 万 ',
-        })}`,
-    },
-    {
-      title: <FormattedMessage id="pages.searchTable.titleStatus" defaultMessage="Status" />,
-      dataIndex: 'status',
-      hideInForm: true,
-      valueEnum: {
-        0: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.default"
-              defaultMessage="Shut down"
-            />
-          ),
-          status: 'Default',
-        },
-        1: {
-          text: (
-            <FormattedMessage id="pages.searchTable.nameStatus.running" defaultMessage="Running" />
-          ),
-          status: 'Processing',
-        },
-        2: {
-          text: (
-            <FormattedMessage id="pages.searchTable.nameStatus.online" defaultMessage="Online" />
-          ),
-          status: 'Success',
-        },
-        3: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.abnormal"
-              defaultMessage="Abnormal"
-            />
-          ),
-          status: 'Error',
-        },
-      },
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleUpdatedAt"
-          defaultMessage="Last scheduled time"
-        />
-      ),
-      sorter: true,
-      dataIndex: 'updatedAt',
-      valueType: 'dateTime',
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return (
-            <Input
-              {...rest}
-              placeholder={intl.formatMessage({
-                id: 'pages.searchTable.exception',
-                defaultMessage: 'Please enter the reason for the exception!',
-              })}
-            />
-          );
-        }
-        return defaultRender(item);
-      },
-    },
-    {
-      title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
-      dataIndex: 'option',
-      valueType: 'option',
-      render: (_, record) => [
-        <a
-          key="config"
-          onClick={() => {
-            handleUpdateModalVisible(true);
-            setCurrentRow(record);
-          }}
-        >
-          <FormattedMessage id="pages.searchTable.config" defaultMessage="Configuration" />
-        </a>,
-        <a key="subscribeAlert" href="https://procomponents.ant.design/">
-          <FormattedMessage
-            id="pages.searchTable.subscribeAlert"
-            defaultMessage="Subscribe to alerts"
-          />
-        </a>,
-      ],
-    },
-  ];
-
+  
+  console.log(table)
+  const columns: ProColumns<any>[] | undefined = table?.tableData?.map((col: any) => {
+    console.log('col: ', col)
+    return col as ProColumns<any>
+  });
+  
   return (
     <PageContainer>
-      <ProTable<API.RuleListItem, API.PageParams>
+      <ProTable<API.TableListItem, API.PageParams>
         headerTitle={intl.formatMessage({
           id: 'pages.searchTable.title',
           defaultMessage: 'Enquiry form',
@@ -260,7 +153,7 @@ const TableList: React.FC = () => {
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
           </Button>,
         ]}
-        request={rule}
+        // request={rule}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {
@@ -281,7 +174,7 @@ const TableList: React.FC = () => {
                   id="pages.searchTable.totalServiceCalls"
                   defaultMessage="Total number of service calls"
                 />{' '}
-                {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '}
+                {/* {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '} */}
                 <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万" />
               </span>
             </div>
@@ -307,16 +200,14 @@ const TableList: React.FC = () => {
           </Button>
         </FooterToolbar>
       )}
+      
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
-        })}
+        title="New Entry"
         width="400px"
         visible={createModalVisible}
         onVisibleChange={handleModalVisible}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.RuleListItem);
+          const success = await handleAdd(value as API.TableListItem);
           if (success) {
             handleModalVisible(false);
             if (actionRef.current) {
@@ -325,22 +216,20 @@ const TableList: React.FC = () => {
           }
         }}
       >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.searchTable.ruleName"
-                  defaultMessage="Rule name is required"
-                />
-              ),
-            },
-          ]}
-          width="md"
-          name="name"
+        <BetaSchemaForm // <DataItem[]> // ???
+          layoutType = {  'Form'  }
+          onFinish={async (values) => {
+            console . log ( values ) ;
+            const success = await handleAdd(values as API.TableListItem);
+            if (success) {
+              handleModalVisible(false);
+              if (actionRef.current) {
+                actionRef.current.reload();
+              }
+            }
+          }}
+          columns = {table.tableCreateForm as any} // Martin create Data Form definition
         />
-        <ProFormTextArea width="md" name="desc" />
       </ModalForm>
       <UpdateForm
         onSubmit={async (value) => {
@@ -373,7 +262,7 @@ const TableList: React.FC = () => {
         closable={false}
       >
         {currentRow?.name && (
-          <ProDescriptions<API.RuleListItem>
+          <ProDescriptions<API.TableListItem>
             column={2}
             title={currentRow?.name}
             request={async () => ({
@@ -382,7 +271,7 @@ const TableList: React.FC = () => {
             params={{
               id: currentRow?.name,
             }}
-            columns={columns as ProDescriptionsItemProps<API.RuleListItem>[]}
+            columns={columns as ProDescriptionsItemProps<API.TableListItem>[]}
           />
         )}
       </Drawer>
