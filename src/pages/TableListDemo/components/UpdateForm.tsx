@@ -30,7 +30,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   return (
     <StepsForm
       stepsProps={{
-        size: 'small',
+        size: 'default',
       }}
       stepsFormRender={(dom, submitter) => {
         return (
