@@ -10,7 +10,7 @@ import type { ProDescriptionsItemProps } from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-import { getTablePageDefinition } from '@/services/flux-eco-system/api';
+import { create, getItem, getTablePageDefinition } from '@/services/flux-eco-system/api';
 import { history } from '@/.umi/core/history';
 	
 /**
@@ -22,7 +22,7 @@ import { history } from '@/.umi/core/history';
     const hide = message.loading('loading');
     try {
       console.log(fields)
-      // await addUiPage(fields);
+      await create({projectionName: 'courses'}, fields); // Martin: create request here
       hide();
       message.success('Added successfully');
       return true;
@@ -87,17 +87,16 @@ const TableList: React.FC = () => {
 
   const asyncFetch = async () => {
     try {
-      const res: API.TablePageDefinition = await getTablePageDefinition({
+      const res: any = await getTablePageDefinition({
         projectionName: 'courses'
       }); // Martin get Table definition here
-      console.log(typeof(res), res);
 
-      setTablePage(res);
-      console.log(tablePage);
+      setTablePage(res.payload);
     } catch (err) {
       console.error('Fetch Data failed ', err)
     }
 };
+  console.log(tablePage);
 
   useEffect(() => { asyncFetch(); }, [location]);
   // asyncFetch();
@@ -125,7 +124,7 @@ const TableList: React.FC = () => {
    * */
   const intl = useIntl();
   
-  const columns: ProColumns<any>[] | undefined = tablePage?.table?.map((col: any) => {
+  const columns: ProColumns<any>[] | undefined = tablePage?.table?.data?.map((col: any) => {
     console.log('col: ', col)
     return col as ProColumns<any>
   });
@@ -153,7 +152,12 @@ const TableList: React.FC = () => {
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
           </Button>,
         ]}
-        // request={rule}
+        request={async (params = {}, sort, filter) => {
+          console.log(sort, filter);
+          const res = await getItem({projectionName: 'courses', id: '1'}); // Martin: read request here
+          console.warn(res)
+          return res;
+        }}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {
