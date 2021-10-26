@@ -54,14 +54,8 @@ export default defineConfig({
   openAPI: [
     {
       requestLibPath: "import { request } from 'umi'",
-      schemaPath: 'http://127.0.0.1:8010/api/crudapi.json',
-      projectName: 'flux-eco-system-data',
-      mock: false,
-    },
-    {
-      requestLibPath: "import { request } from 'umi'",
-      schemaPath: 'http://127.0.0.1:8010/api/moduleapi.json',
-      projectName: 'flux-eco-system-schema',
+      schemaPath: 'http://127.0.0.1:8010/api/openapi.json',
+      projectName: 'flux-eco-system',
       mock: false,
     },
     {

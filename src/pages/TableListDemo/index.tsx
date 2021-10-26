@@ -10,7 +10,7 @@ import type { ProDescriptionsItemProps } from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-import { addUiPage, getTable } from '@/services/flux-eco-system-schema/api';
+import { getTablePageDefinition } from '@/services/flux-eco-system/api';
 import { history } from '@/.umi/core/history';
 	
 /**
@@ -18,11 +18,11 @@ import { history } from '@/.umi/core/history';
  * @zh-CN 添加节点
  * @param fields
 */
-  const handleAdd = async (fields: API.TableListItem) => { // Martin Table entry data definition
+  const handleAdd = async (fields: API.Item) => { // Martin Table entry data definition
     const hide = message.loading('loading');
     try {
       console.log(fields)
-      await addUiPage(fields);
+      // await addUiPage(fields);
       hide();
       message.success('Added successfully');
       return true;
@@ -63,7 +63,7 @@ const handleUpdate = async (fields: FormValueType) => {
  *
  * @param selectedRows
  */
-const handleRemove = async (selectedRows: API.TableListItem[]) => {
+const handleRemove = async (selectedRows: API.Item[]) => {
   const hide = message.loading('Loading');
   if (!selectedRows) return true;
   try {
@@ -82,21 +82,22 @@ const handleRemove = async (selectedRows: API.TableListItem[]) => {
 
 const TableList: React.FC = () => {
 
-const location = history.location.pathname;
-// const [loading, setLoading] = useState(true);
-const [table, setTable] = useState<API.Table>({}); // Martin: Table definition object
+  const location = history.location.pathname;
+  const [tablePage, setTablePage] = useState<API.TablePageDefinition>({}); // Martin: Table definition object
 
   const asyncFetch = async () => {
     try {
-      const res: any = await getTable({'application': location}); // Martin get Table definition here
-      console.log(res);
+      const res: API.TablePageDefinition = await getTablePageDefinition({
+        projectionName: 'courses'
+      }); // Martin get Table definition here
+      console.log(typeof(res), res);
 
-      setTable(res);
-      console.log(table);
+      setTablePage(res);
+      console.log(tablePage);
     } catch (err) {
       console.error('Fetch Data failed ', err)
     }
-  };
+};
 
   useEffect(() => { asyncFetch(); }, [location]);
   // asyncFetch();
@@ -115,8 +116,8 @@ const [table, setTable] = useState<API.Table>({}); // Martin: Table definition o
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.TableListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.TableListItem[]>([]);
+  const [currentRow, setCurrentRow] = useState<API.Item>();
+  const [selectedRowsState, setSelectedRows] = useState<API.Item[]>([]);
 
   /**
    * @en-US International configuration
@@ -124,15 +125,14 @@ const [table, setTable] = useState<API.Table>({}); // Martin: Table definition o
    * */
   const intl = useIntl();
   
-  console.log(table)
-  const columns: ProColumns<any>[] | undefined = table?.tableData?.map((col: any) => {
+  const columns: ProColumns<any>[] | undefined = tablePage?.table?.map((col: any) => {
     console.log('col: ', col)
     return col as ProColumns<any>
   });
   
   return (
     <PageContainer>
-      <ProTable<API.TableListItem, API.PageParams>
+      <ProTable<API.Item, API.PageParams>
         headerTitle={intl.formatMessage({
           id: 'pages.searchTable.title',
           defaultMessage: 'Enquiry form',
@@ -207,7 +207,7 @@ const [table, setTable] = useState<API.Table>({}); // Martin: Table definition o
         visible={createModalVisible}
         onVisibleChange={handleModalVisible}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.TableListItem);
+          const success = await handleAdd(value as API.Item);
           if (success) {
             handleModalVisible(false);
             if (actionRef.current) {
@@ -220,7 +220,7 @@ const [table, setTable] = useState<API.Table>({}); // Martin: Table definition o
           layoutType = {  'Form'  }
           onFinish={async (values) => {
             console . log ( values ) ;
-            const success = await handleAdd(values as API.TableListItem);
+            const success = await handleAdd(values as API.Item);
             if (success) {
               handleModalVisible(false);
               if (actionRef.current) {
@@ -228,7 +228,7 @@ const [table, setTable] = useState<API.Table>({}); // Martin: Table definition o
               }
             }
           }}
-          columns = {table.tableCreateForm as any} // Martin create Data Form definition
+          columns = {tablePage.formCreate as any} // Martin create Data Form definition
         />
       </ModalForm>
       <UpdateForm
@@ -262,7 +262,7 @@ const [table, setTable] = useState<API.Table>({}); // Martin: Table definition o
         closable={false}
       >
         {currentRow?.name && (
-          <ProDescriptions<API.TableListItem>
+          <ProDescriptions<API.Item>
             column={2}
             title={currentRow?.name}
             request={async () => ({
@@ -271,7 +271,7 @@ const [table, setTable] = useState<API.Table>({}); // Martin: Table definition o
             params={{
               id: currentRow?.name,
             }}
-            columns={columns as ProDescriptionsItemProps<API.TableListItem>[]}
+            columns={columns as ProDescriptionsItemProps<API.Item>[]}
           />
         )}
       </Drawer>
