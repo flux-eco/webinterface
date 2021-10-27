@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = '/table';
+const loginPath = '/modules';
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {
@@ -28,7 +28,7 @@ export async function getInitialState(): Promise<{
       // const msg = await queryCurrentUser();
       return undefined;
     } catch (error) {
-      history.push(loginPath);
+      // history.push(loginPath);
     }
     return undefined;
   };
@@ -60,7 +60,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
       const { location } = history;
       // 如果没有登录，重定向到 login
       if (!initialState?.currentUser && location.pathname !== loginPath) {
-        history.push(loginPath);
+        // history.push(loginPath);
       }
     },
     links: isDev

@@ -16,13 +16,13 @@ export type FormValueType = {
   type?: string;
   time?: string;
   frequency?: string;
-} & Partial<API.Item>;
+} & Partial<API.RuleListItem>;
 
 export type UpdateFormProps = {
   onCancel: (flag?: boolean, formVals?: FormValueType) => void;
   onSubmit: (values: FormValueType) => Promise<void>;
   updateModalVisible: boolean;
-  values: Partial<API.Item>;
+  values: Partial<API.RuleListItem>;
 };
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {

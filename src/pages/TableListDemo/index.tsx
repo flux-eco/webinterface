@@ -1,18 +1,19 @@
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, message, Input, Drawer } from 'antd';
+import { LeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, message, Input, Drawer, Tooltip } from 'antd';
 import React, { useState, useEffect, useRef } from 'react';
 import { useIntl, FormattedMessage } from 'umi';
 import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { BetaSchemaForm, ModalForm, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
+import { BetaSchemaForm, ModalForm } from '@ant-design/pro-form';
 import type { ProDescriptionsItemProps } from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
 import { create, getItem, getTablePageDefinition } from '@/services/flux-eco-system/api';
 import { history } from '@/.umi/core/history';
-	
+import { useParams } from 'react-router';
+
 /**
  * @en-US Add node
  * @zh-CN 添加节点
@@ -81,22 +82,21 @@ const handleRemove = async (selectedRows: API.Item[]) => {
 };
 
 const TableList: React.FC = () => {
-
+  const params: any = useParams()
   const location = history.location.pathname;
   const [tablePage, setTablePage] = useState<API.TablePageDefinition>({}); // Martin: Table definition object
 
   const asyncFetch = async () => {
     try {
       const res: any = await getTablePageDefinition({
-        projectionName: 'courses'
+        projectionName: params.id
       }); // Martin get Table definition here
 
       setTablePage(res.payload);
     } catch (err) {
       console.error('Fetch Data failed ', err)
     }
-};
-  console.log(tablePage);
+  };
 
   useEffect(() => { asyncFetch(); }, [location]);
   // asyncFetch();
@@ -130,101 +130,96 @@ const TableList: React.FC = () => {
   });
   
   return (
-    <PageContainer>
-      <ProTable<API.Item, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.searchTable.title',
-          defaultMessage: 'Enquiry form',
-        })}
-        actionRef={actionRef}
-        rowKey="key"
-        search={{
-          labelWidth: 120,
-        }}
-        toolBarRender={() => [
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              handleModalVisible(true);
-            }}
-          >
-            <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
-          </Button>,
-        ]}
-        request={async (params = {}, sort, filter) => {
-          console.log(sort, filter);
-          const res = await getItem({projectionName: 'courses', id: '1'}); // Martin: read request here
-          console.warn(res)
-          return res;
-        }}
-        columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => {
-            setSelectedRows(selectedRows);
-          },
-        }}
-      />
-      {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen" />{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              <FormattedMessage id="pages.searchTable.item" defaultMessage="项" />
-              &nbsp;&nbsp;
-              <span>
-                <FormattedMessage
-                  id="pages.searchTable.totalServiceCalls"
-                  defaultMessage="Total number of service calls"
-                />{' '}
-                {/* {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '} */}
-                <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万" />
-              </span>
-            </div>
-          }
-        >
-          <Button
-            onClick={async () => {
-              await handleRemove(selectedRowsState);
-              setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
-            }}
-          >
-            <FormattedMessage
-              id="pages.searchTable.batchDeletion"
-              defaultMessage="Batch deletion"
-            />
-          </Button>
-          <Button type="primary">
-            <FormattedMessage
-              id="pages.searchTable.batchApproval"
-              defaultMessage="Batch approval"
-            />
-          </Button>
-        </FooterToolbar>
-      )}
-      
-      <ModalForm
-        title="New Entry"
-        width="400px"
-        visible={createModalVisible}
-        onVisibleChange={handleModalVisible}
-        onFinish={async (value) => {
-          const success = await handleAdd(value as API.Item);
-          if (success) {
-            handleModalVisible(false);
-            if (actionRef.current) {
-              actionRef.current.reload();
+    <div style={{position: 'relative'}}>
+      <Tooltip title="Navigate back">
+        <Button 
+          type="primary"
+          icon={<LeftOutlined />}
+          onClick={() => history.push('/modules')}
+          style={{position: 'fixed', zIndex: 99999999, top: '.5em', left: '.5em'}}>Back</Button>
+      </Tooltip>
+      <PageContainer style={{marginTop: '1.25em'}}>
+        <ProTable<API.Item, API.PageParams>
+          headerTitle={intl.formatMessage({
+            id: 'pages.searchTable.title',
+            defaultMessage: 'Enquiry form',
+          })}
+          actionRef={actionRef}
+          rowKey="key"
+          search={{
+            labelWidth: 120,
+          }}
+          toolBarRender={() => [
+            <Button
+              type="primary"
+              key="primary"
+              onClick={() => {
+                handleModalVisible(true);
+              }}
+            >
+              <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
+            </Button>,
+          ]}
+          request={async (params = {}, sort, filter) => {
+            console.log(sort, filter);
+            const res = await getItem({projectionName: 'courses', id: '1'}); // Martin: read request here
+            console.warn(res)
+            return res;
+          }}
+          columns={columns}
+          rowSelection={{
+            onChange: (_, selectedRows) => {
+              setSelectedRows(selectedRows);
+            },
+          }}
+        />
+        {selectedRowsState?.length > 0 && (
+          <FooterToolbar
+            extra={
+              <div>
+                <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen" />{' '}
+                <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
+                <FormattedMessage id="pages.searchTable.item" defaultMessage="项" />
+                &nbsp;&nbsp;
+                <span>
+                  <FormattedMessage
+                    id="pages.searchTable.totalServiceCalls"
+                    defaultMessage="Total number of service calls"
+                  />{' '}
+                  {/* {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '} */}
+                  <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万" />
+                </span>
+              </div>
             }
-          }
-        }}
-      >
-        <BetaSchemaForm // <DataItem[]> // ???
-          layoutType = {  'Form'  }
-          onFinish={async (values) => {
-            console . log ( values ) ;
-            const success = await handleAdd(values as API.Item);
+          >
+            <Button
+              onClick={async () => {
+                await handleRemove(selectedRowsState);
+                setSelectedRows([]);
+                actionRef.current?.reloadAndRest?.();
+              }}
+            >
+              <FormattedMessage
+                id="pages.searchTable.batchDeletion"
+                defaultMessage="Batch deletion"
+              />
+            </Button>
+            <Button type="primary">
+              <FormattedMessage
+                id="pages.searchTable.batchApproval"
+                defaultMessage="Batch approval"
+              />
+            </Button>
+          </FooterToolbar>
+        )}
+        
+        <ModalForm
+          title="New Entry"
+          width="400px"
+          visible={createModalVisible}
+          onVisibleChange={handleModalVisible}
+          onFinish={async (value) => {
+            const success = await handleAdd(value as API.Item);
             if (success) {
               handleModalVisible(false);
               if (actionRef.current) {
@@ -232,54 +227,68 @@ const TableList: React.FC = () => {
               }
             }
           }}
-          columns = {tablePage.formCreate as any} // Martin create Data Form definition
-        />
-      </ModalForm>
-      <UpdateForm
-        onSubmit={async (value) => {
-          const success = await handleUpdate(value);
-          if (success) {
-            handleUpdateModalVisible(false);
-            setCurrentRow(undefined);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-        onCancel={() => {
-          handleUpdateModalVisible(false);
-          if (!showDetail) {
-            setCurrentRow(undefined);
-          }
-        }}
-        updateModalVisible={updateModalVisible}
-        values={currentRow || {}}
-      />
-
-      <Drawer
-        width={600}
-        visible={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
-        }}
-        closable={false}
-      >
-        {currentRow?.name && (
-          <ProDescriptions<API.Item>
-            column={2}
-            title={currentRow?.name}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.name,
+        >
+          <BetaSchemaForm // <DataItem[]> // ???
+            layoutType = {  'Form'  }
+            onFinish={async (values) => {
+              console . log ( values ) ;
+              const success = await handleAdd(values as API.Item);
+              if (success) {
+                handleModalVisible(false);
+                if (actionRef.current) {
+                  actionRef.current.reload();
+                }
+              }
             }}
-            columns={columns as ProDescriptionsItemProps<API.Item>[]}
+            columns = {tablePage.formCreate as any} // Martin create Data Form definition
           />
-        )}
-      </Drawer>
-    </PageContainer>
+        </ModalForm>
+        <UpdateForm
+          onSubmit={async (value) => {
+            const success = await handleUpdate(value);
+            if (success) {
+              handleUpdateModalVisible(false);
+              setCurrentRow(undefined);
+              if (actionRef.current) {
+                actionRef.current.reload();
+              }
+            }
+          }}
+          onCancel={() => {
+            handleUpdateModalVisible(false);
+            if (!showDetail) {
+              setCurrentRow(undefined);
+            }
+          }}
+          updateModalVisible={updateModalVisible}
+          values={currentRow || {}}
+        />
+
+        <Drawer
+          width={600}
+          visible={showDetail}
+          onClose={() => {
+            setCurrentRow(undefined);
+            setShowDetail(false);
+          }}
+          closable={false}
+        >
+          {currentRow?.name && (
+            <ProDescriptions<API.Item>
+              column={2}
+              title={currentRow?.name}
+              request={async () => ({
+                data: currentRow || {},
+              })}
+              params={{
+                id: currentRow?.name,
+              }}
+              columns={columns as ProDescriptionsItemProps<API.Item>[]}
+            />
+          )}
+        </Drawer>
+      </PageContainer>
+    </div>
   );
 };
 
