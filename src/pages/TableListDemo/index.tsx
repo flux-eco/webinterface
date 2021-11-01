@@ -1,38 +1,43 @@
-import { LeftOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, message, Input, Drawer, Tooltip } from 'antd';
-import React, { useState, useEffect, useRef } from 'react';
-import { useIntl, FormattedMessage } from 'umi';
-import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
-import type { ProColumns, ActionType } from '@ant-design/pro-table';
+import {LeftOutlined, PlusOutlined} from '@ant-design/icons';
+import {Button, Drawer, message, Tooltip} from 'antd';
+import React, {useEffect, useRef, useState} from 'react';
+import {FormattedMessage} from 'umi';
+import {FooterToolbar, PageContainer} from '@ant-design/pro-layout';
+import type {ActionType, ProColumns} from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { BetaSchemaForm, ModalForm } from '@ant-design/pro-form';
-import type { ProDescriptionsItemProps } from '@ant-design/pro-descriptions';
+import {BetaSchemaForm, ModalForm} from '@ant-design/pro-form';
+import type {ProDescriptionsItemProps} from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
-import type { FormValueType } from './components/UpdateForm';
+import type {FormValueType} from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-import { create, getItem, getTablePageDefinition } from '@/services/flux-eco-system/api';
-import { history } from '@/.umi/core/history';
-import { useParams } from 'react-router';
+import {create, getProjectionList, getTablePageDefinition} from '@/services/flux-eco-system/api';
+import {history} from '@/.umi/core/history';
+import {useParams} from 'react-router';
 
 /**
  * @en-US Add node
  * @zh-CN 添加节点
  * @param fields
-*/
-  const handleAdd = async (fields: API.Item) => { // Martin Table entry data definition
-    const hide = message.loading('loading');
-    try {
-      console.log(fields)
-      await create({projectionName: 'courses'}, fields); // Martin: create request here
-      hide();
-      message.success('Added successfully');
-      return true;
-    } catch (error) {
-      hide();
-      message.error('Adding failed, please try again!');
-      return false;
-     }
-   };
+ * @param params
+ */
+const handleAdd = async (params: {
+                           projectionName: string;
+                         },
+                         fields: API.Item
+) => { // Martin Table entry data definition
+  const hide = message.loading('loading');
+  try {
+    console.log(fields)
+    await create(params, fields); // Martin: create request here
+    hide();
+    message.success('Added successfully');
+    return true;
+  } catch (error) {
+    hide();
+    message.error('Adding failed, please try again!');
+    return false;
+  }
+};
 /**
  * @en-US Update node
  * @zh-CN 更新节点
@@ -84,6 +89,7 @@ const handleRemove = async (selectedRows: API.Item[]) => {
 const TableList: React.FC = () => {
   const params: any = useParams()
   const location = history.location.pathname;
+
   const [tablePage, setTablePage] = useState<API.TablePageDefinition>({}); // Martin: Table definition object
 
   const asyncFetch = async () => {
@@ -92,13 +98,15 @@ const TableList: React.FC = () => {
         projectionName: params.id
       }); // Martin get Table definition here
 
-      setTablePage(res.payload);
+      setTablePage(res);
     } catch (err) {
       console.error('Fetch Data failed ', err)
     }
   };
 
-  useEffect(() => { asyncFetch(); }, [location]);
+  useEffect(() => {
+    asyncFetch();
+  }, [location]);
   // asyncFetch();
 
   /**
@@ -118,34 +126,25 @@ const TableList: React.FC = () => {
   const [currentRow, setCurrentRow] = useState<API.Item>();
   const [selectedRowsState, setSelectedRows] = useState<API.Item[]>([]);
 
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
-  
   const columns: ProColumns<any>[] | undefined = tablePage?.table?.data?.map((col: any) => {
     console.log('col: ', col)
     return col as ProColumns<any>
   });
-  
+
   return (
     <div style={{position: 'relative'}}>
       <Tooltip title="Navigate back">
-        <Button 
+        <Button
           type="primary"
-          icon={<LeftOutlined />}
+          icon={<LeftOutlined/>}
           onClick={() => history.push('/modules')}
           style={{position: 'fixed', zIndex: 99999999, top: '.5em', left: '.5em'}}>Back</Button>
       </Tooltip>
       <PageContainer style={{marginTop: '1.25em'}}>
         <ProTable<API.Item, API.PageParams>
-          headerTitle={intl.formatMessage({
-            id: 'pages.searchTable.title',
-            defaultMessage: 'Enquiry form',
-          })}
+          headerTitle={tablePage?.title}
           actionRef={actionRef}
-          rowKey="key"
+          rowKey="sequence"
           search={{
             labelWidth: 120,
           }}
@@ -157,18 +156,19 @@ const TableList: React.FC = () => {
                 handleModalVisible(true);
               }}
             >
-              <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
+              <PlusOutlined/> <FormattedMessage id="pages.searchTable.new" defaultMessage="New"/>
             </Button>,
           ]}
-          request={async (params = {}, sort, filter) => {
-            console.log(sort, filter);
-            const res = await getItem({projectionName: 'courses', id: '1'}); // Martin: read request here
+          request={async ({}, sort, filter) => {
+            console.log(sort);
+            console.log(filter);
+            const res = await getProjectionList({projectionName: params.id})
             console.warn(res)
             return res;
           }}
           columns={columns}
           rowSelection={{
-            onChange: (_, selectedRows) => {
+            onChange: (sequence, selectedRows) => {
               setSelectedRows(selectedRows);
             },
           }}
@@ -177,9 +177,9 @@ const TableList: React.FC = () => {
           <FooterToolbar
             extra={
               <div>
-                <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen" />{' '}
-                <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-                <FormattedMessage id="pages.searchTable.item" defaultMessage="项" />
+                <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen"/>{' '}
+                <a style={{fontWeight: 600}}>{selectedRowsState.length}</a>{' '}
+                <FormattedMessage id="pages.searchTable.item" defaultMessage="项"/>
                 &nbsp;&nbsp;
                 <span>
                   <FormattedMessage
@@ -187,7 +187,7 @@ const TableList: React.FC = () => {
                     defaultMessage="Total number of service calls"
                   />{' '}
                   {/* {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '} */}
-                  <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万" />
+                  <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万"/>
                 </span>
               </div>
             }
@@ -212,14 +212,17 @@ const TableList: React.FC = () => {
             </Button>
           </FooterToolbar>
         )}
-        
+
         <ModalForm
           title="New Entry"
           width="400px"
           visible={createModalVisible}
           onVisibleChange={handleModalVisible}
-          onFinish={async (value) => {
-            const success = await handleAdd(value as API.Item);
+          onFinish={async (values) => {
+            const success = await handleAdd(
+              {projectionName: params.id},
+              values as API.Item
+            );
             if (success) {
               handleModalVisible(false);
               if (actionRef.current) {
@@ -229,10 +232,10 @@ const TableList: React.FC = () => {
           }}
         >
           <BetaSchemaForm // <DataItem[]> // ???
-            layoutType = {  'Form'  }
+            layoutType={'Form'}
             onFinish={async (values) => {
-              console . log ( values ) ;
-              const success = await handleAdd(values as API.Item);
+              console.log(values);
+              const success = await handleAdd({projectionName: params.id}, values as API.Item);
               if (success) {
                 handleModalVisible(false);
                 if (actionRef.current) {
@@ -240,7 +243,7 @@ const TableList: React.FC = () => {
                 }
               }
             }}
-            columns = {tablePage.formCreate as any} // Martin create Data Form definition
+            columns={tablePage.formCreate as any} // Martin create Data Form definition
           />
         </ModalForm>
         <UpdateForm

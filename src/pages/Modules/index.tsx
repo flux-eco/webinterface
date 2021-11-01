@@ -6,7 +6,7 @@ import { Card } from 'antd';
 import Meta from 'antd/lib/card/Meta';
 import style from './style.less'
 import classNames from 'classnames';
-	
+
 
 const Modules: React.FC = () => {
   const location = history.location.pathname;
@@ -15,7 +15,7 @@ const Modules: React.FC = () => {
   const fetchModules = async () => {
     try {
       const res: any = await getModuleList();
-      setModules({data: res.payload.modules});
+      setModules({data: res.modules});
     } catch (err) {
       console.error('Fetch Data failed ', err)
     }
@@ -29,7 +29,7 @@ const Modules: React.FC = () => {
     return modules.data?.map((module, i) => {
       return (<Card
         key={i}
-        hoverable 
+        hoverable
         style={{ width: 240, margin: '0.5em' }}
         cover={<img alt="example" style={{height: 200}} src={module.ImageUrl} />}
         onClick={() => history.push(`/${module.Url}`)}
@@ -39,7 +39,7 @@ const Modules: React.FC = () => {
         </Card>);
     });
   }
-  
+
   return (
     <PageContainer>
       <div className={classNames(style.container)}>
