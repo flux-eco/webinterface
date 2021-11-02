@@ -9,7 +9,12 @@
 export default {
   dev: {
     '/api/': {
-      target: 'https://preview.pro.ant.design',
+      target: 'http://localhost:8010',
+      changeOrigin: true,
+      pathRewrite: { '^': '' },
+    },
+    '/images/': {
+      target: 'http://localhost:8010',
       changeOrigin: true,
       pathRewrite: { '^': '' },
     },
