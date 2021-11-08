@@ -26,17 +26,19 @@ const Modules: React.FC = () => {
 
 
   const getCards = () => {
+    console.log(modules.data)
     return modules.data?.map((module, i) => {
-      return (<Card
+      return (
+      <Card
         key={i}
         hoverable
         style={{ width: 240, margin: '0.5em' }}
-        cover={<img alt="example" style={{height: 200}} src={module.ImageUrl} />}
-        onClick={() => history.push(`/${module.Url}`)}
+        cover={<img alt="example" style={{height: 200}} src={module.imageUrl} />}
+        onClick={() => history.push(`/${module.url}`)}
         >
 
-          <Meta title={module.Title} description={module.Description} />
-        </Card>);
+        <Meta title={module.title} description={module.description} />
+      </Card>);
     });
   }
 
