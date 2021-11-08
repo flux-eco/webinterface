@@ -1,5 +1,5 @@
-import {LeftOutlined, PlusOutlined} from '@ant-design/icons';
-import {Button, Drawer, message, Tooltip} from 'antd';
+import {CaretDownOutlined, LeftOutlined, PlusOutlined} from '@ant-design/icons';
+import {Menu, Dropdown, Button, Drawer, message, Tooltip} from 'antd';
 import React, {useEffect, useRef, useState} from 'react';
 import {FormattedMessage} from 'umi';
 import {PageContainer} from '@ant-design/pro-layout';
@@ -10,25 +10,25 @@ import type {ProDescriptionsItemProps} from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import type {FormValueType} from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-import {create, getProjectionList, getTablePageDefinition} from '@/services/flux-eco-system/api';
+import {create, deleteItem, getProjectionList, getTablePageDefinition} from '@/services/flux-eco-system/api';
 import {history} from '@/.umi/core/history';
 import {useParams} from 'react-router';
-
 /**
  * @en-US Add node
  * @zh-CN 添加节点
  * @param fields
  * @param params
  */
-const handleAdd = async (params: {
-                           projectionName: string;
-                         },
-                         fields: API.Item
-) => { // Martin Table entry data definition
+const handleAdd = async (
+    params: {
+      projectionName: string;
+    },
+    fields: API.Item) => {
+
   const hide = message.loading('loading');
   try {
     console.log(fields)
-    await create(params, fields); // Martin: create request here
+    await create(params, fields);
     hide();
     message.success('Added successfully');
     return true;
@@ -67,15 +67,17 @@ const handleUpdate = async (fields: FormValueType) => {
  *  Delete node
  * @zh-CN 删除节点
  *
- * @param selectedRows
+ * @param item
  */
-const handleRemove = async (selectedRows: API.Item[]) => {
+const handleRemove = async (projectionName: string, item: API.Item) => {
   const hide = message.loading('Loading');
-  if (!selectedRows) return true;
+  if (!item) return true;
   try {
-    // await removeRule({
-    //   id: selectedRows.map((row) => row.id),
-    // });
+    await deleteItem({
+      projectionName,
+      id: item.id
+    });
+
     hide();
     message.success('Deleted successfully and will refresh soon');
     return true;
@@ -136,15 +138,39 @@ const TableList: React.FC = () => {
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.Item>();
-  const [selectedRowsState, setSelectedRows] = useState<API.Item[]>([]);
 
   const columns: ProColumns<any>[] | undefined = tablePage?.table?.data?.map((col: any) => {
     return col as ProColumns<any>
   });
 
-  columns?.push({
 
-  })
+  columns?.push( {
+    title: 'Options',
+    key: 'option',
+    width: 120,
+    valueType: 'option',
+    render: (_, item, index, action) => [
+      <Dropdown key="a" overlay={(
+        <Menu>
+          <Menu.Item>
+            <a target="_blank" rel="noopener noreferrer" href="https://www.antgroup.com">
+              Edit
+            </a>
+          </Menu.Item>
+          <Menu.Item>
+            <a target="_blank" rel="noopener noreferrer" onClick={() => {
+              console.log(_, item, index, action);
+              handleRemove(params.id, item);
+            }}>
+              Delete
+            </a>
+          </Menu.Item>
+        </Menu>
+      )} placement="bottomCenter" arrow>
+        <Button>More<CaretDownOutlined /></Button>
+      </Dropdown>
+    ],
+  },)
 
   console.log('tablePage', tablePage)
 
@@ -157,7 +183,7 @@ const TableList: React.FC = () => {
           onClick={() => history.push('/modules')}
           style={{position: 'fixed', zIndex: 99999999, top: '.5em', left: '.5em'}}>Back</Button>
       </Tooltip>
-      
+
       <PageContainer style={{marginTop: '1.25em'}}>
         <ProTable<API.Item, API.PageParams>
           headerTitle={tablePage?.title}
