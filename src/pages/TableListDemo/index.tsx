@@ -1,8 +1,8 @@
-import {LeftOutlined, PlusOutlined} from '@ant-design/icons';
-import {Button, Drawer, message, Tooltip} from 'antd';
+import {CaretDownOutlined, LeftOutlined, PlusOutlined} from '@ant-design/icons';
+import {Menu, Dropdown, Button, Drawer, message, Tooltip} from 'antd';
 import React, {useEffect, useRef, useState} from 'react';
 import {FormattedMessage} from 'umi';
-import {FooterToolbar, PageContainer} from '@ant-design/pro-layout';
+import {PageContainer} from '@ant-design/pro-layout';
 import type {ActionType, ProColumns} from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import {BetaSchemaForm, ModalForm} from '@ant-design/pro-form';
@@ -10,25 +10,25 @@ import type {ProDescriptionsItemProps} from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import type {FormValueType} from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-import {create, getProjectionList, getTablePageDefinition} from '@/services/flux-eco-system/api';
+import {create, deleteItem, getProjectionList, getTablePageDefinition} from '@/services/flux-eco-system/api';
 import {history} from '@/.umi/core/history';
 import {useParams} from 'react-router';
-
 /**
  * @en-US Add node
  * @zh-CN 添加节点
  * @param fields
  * @param params
  */
-const handleAdd = async (params: {
-                           projectionName: string;
-                         },
-                         fields: API.Item
-) => { // Martin Table entry data definition
+const handleAdd = async (
+    params: {
+      projectionName: string;
+    },
+    fields: API.Item) => {
+
   const hide = message.loading('loading');
   try {
     console.log(fields)
-    await create(params, fields); // Martin: create request here
+    await create(params, fields);
     hide();
     message.success('Added successfully');
     return true;
@@ -67,15 +67,17 @@ const handleUpdate = async (fields: FormValueType) => {
  *  Delete node
  * @zh-CN 删除节点
  *
- * @param selectedRows
+ * @param item
  */
-const handleRemove = async (selectedRows: API.Item[]) => {
+const handleRemove = async (projectionName: string, item: API.Item) => {
   const hide = message.loading('Loading');
-  if (!selectedRows) return true;
+  if (!item) return true;
   try {
-    // await removeRule({
-    //   id: selectedRows.map((row) => row.id),
-    // });
+    await deleteItem({
+      projectionName,
+      id: item.id
+    });
+
     hide();
     message.success('Deleted successfully and will refresh soon');
     return true;
@@ -90,13 +92,25 @@ const TableList: React.FC = () => {
   const params: any = useParams()
   const location = history.location.pathname;
 
-  const [tablePage, setTablePage] = useState<API.TablePageDefinition>({}); // Martin: Table definition object
+  const [tablePage, setTablePage] = useState<API.TablePageDefinition>({});
 
   const asyncFetch = async () => {
     try {
       const res: any = await getTablePageDefinition({
         projectionName: params.id
-      }); // Martin get Table definition here
+      });
+
+      if (res?.config === undefined) {
+        res.config = {
+          formCreate: {
+            hidden: false
+          },
+          tableFilter: {
+            hidden: true
+          }
+        }
+      }
+      console.log('res', res);
 
       setTablePage(res);
     } catch (err) {
@@ -124,12 +138,41 @@ const TableList: React.FC = () => {
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.Item>();
-  const [selectedRowsState, setSelectedRows] = useState<API.Item[]>([]);
 
   const columns: ProColumns<any>[] | undefined = tablePage?.table?.data?.map((col: any) => {
-    console.log('col: ', col)
     return col as ProColumns<any>
   });
+
+
+  columns?.push( {
+    title: 'Options',
+    key: 'option',
+    width: 120,
+    valueType: 'option',
+    render: (_, item, index, action) => [
+      <Dropdown key="a" overlay={(
+        <Menu>
+          <Menu.Item>
+            <a target="_blank" rel="noopener noreferrer" href="https://www.antgroup.com">
+              Edit
+            </a>
+          </Menu.Item>
+          <Menu.Item>
+            <a target="_blank" rel="noopener noreferrer" onClick={() => {
+              console.log(_, item, index, action);
+              handleRemove(params.id, item);
+            }}>
+              Delete
+            </a>
+          </Menu.Item>
+        </Menu>
+      )} placement="bottomCenter" arrow>
+        <Button>More<CaretDownOutlined /></Button>
+      </Dropdown>
+    ],
+  },)
+
+  console.log('tablePage', tablePage)
 
   return (
     <div style={{position: 'relative'}}>
@@ -140,15 +183,16 @@ const TableList: React.FC = () => {
           onClick={() => history.push('/modules')}
           style={{position: 'fixed', zIndex: 99999999, top: '.5em', left: '.5em'}}>Back</Button>
       </Tooltip>
+
       <PageContainer style={{marginTop: '1.25em'}}>
         <ProTable<API.Item, API.PageParams>
           headerTitle={tablePage?.title}
-          actionRef={actionRef}
+          // actionRef={actionRef}
           rowKey="sequence"
-          search={{
+          search={tablePage.config?.tableFilter?.hidden ? false : {
             labelWidth: 120,
           }}
-          toolBarRender={() => [
+          toolBarRender={tablePage.config?.formCreate?.hidden ? false : () => [
             <Button
               type="primary"
               key="primary"
@@ -160,82 +204,25 @@ const TableList: React.FC = () => {
             </Button>,
           ]}
           request={async ({}, sort, filter) => {
-            console.log(sort);
-            console.log(filter);
-            const res = await getProjectionList({projectionName: params.id})
-            console.warn(res)
+            const res = await getProjectionList({projectionName: params.id});
+            console.log('request', res);
             return res;
           }}
           columns={columns}
-          rowSelection={{
-            onChange: (sequence, selectedRows) => {
-              setSelectedRows(selectedRows);
-            },
-          }}
         />
-        {selectedRowsState?.length > 0 && (
-          <FooterToolbar
-            extra={
-              <div>
-                <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen"/>{' '}
-                <a style={{fontWeight: 600}}>{selectedRowsState.length}</a>{' '}
-                <FormattedMessage id="pages.searchTable.item" defaultMessage="项"/>
-                &nbsp;&nbsp;
-                <span>
-                  <FormattedMessage
-                    id="pages.searchTable.totalServiceCalls"
-                    defaultMessage="Total number of service calls"
-                  />{' '}
-                  {/* {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '} */}
-                  <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万"/>
-                </span>
-              </div>
-            }
-          >
-            <Button
-              onClick={async () => {
-                await handleRemove(selectedRowsState);
-                setSelectedRows([]);
-                actionRef.current?.reloadAndRest?.();
-              }}
-            >
-              <FormattedMessage
-                id="pages.searchTable.batchDeletion"
-                defaultMessage="Batch deletion"
-              />
-            </Button>
-            <Button type="primary">
-              <FormattedMessage
-                id="pages.searchTable.batchApproval"
-                defaultMessage="Batch approval"
-              />
-            </Button>
-          </FooterToolbar>
-        )}
-
-        <ModalForm
-          title="New Entry"
-          width="400px"
-          visible={createModalVisible}
-          onVisibleChange={handleModalVisible}
-          onFinish={async (values) => {
-            const success = await handleAdd(
-              {projectionName: params.id},
-              values as API.Item
-            );
-            if (success) {
-              handleModalVisible(false);
-              if (actionRef.current) {
-                actionRef.current.reload();
-              }
-            }
-          }}
-        >
-          <BetaSchemaForm // <DataItem[]> // ???
-            layoutType={'Form'}
+        {
+          tablePage.config?.formCreate?.hidden ? '' :
+          <ModalForm
+            title="New Entry"
+            width="400px"
+            visible={createModalVisible}
+            onVisibleChange={handleModalVisible}
+            submitter={false}
             onFinish={async (values) => {
-              console.log(values);
-              const success = await handleAdd({projectionName: params.id}, values as API.Item);
+              const success = await handleAdd(
+                {projectionName: params.id},
+                values as API.Item
+              );
               if (success) {
                 handleModalVisible(false);
                 if (actionRef.current) {
@@ -243,9 +230,23 @@ const TableList: React.FC = () => {
                 }
               }
             }}
-            columns={tablePage.formCreate as any} // Martin create Data Form definition
-          />
-        </ModalForm>
+          >
+            <BetaSchemaForm // <DataItem[]> // ???
+              layoutType={'Form'}
+              onFinish={async (values) => {
+                console.log(values);
+                const success = await handleAdd({projectionName: params.id}, values as API.Item);
+                if (success) {
+                  handleModalVisible(false);
+                  if (actionRef.current) {
+                    actionRef.current.reload();
+                  }
+                }
+              }}
+              columns={tablePage.formCreate as any} // Martin create Data Form definition
+            />
+          </ModalForm>
+        }
         <UpdateForm
           onSubmit={async (value) => {
             const success = await handleUpdate(value);
