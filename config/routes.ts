@@ -1,10 +1,21 @@
 ﻿export default [
   {
-    name: 'modules',
+    name: 'Topical Areas',
     icon: 'book',
-    path: '/modules',
+    path: '/topicalareas',
     layout: false,
-    component: './Modules',
+    component: './TopicalAreas',
+  },
+  {
+    path: '/topicalareas/:id',
+    redirect: '/topicalareas/:id/list',
+  },
+  {
+    name: 'Topical Area',
+    icon: 'book',
+    path: '/topicalareas/:id/:page',
+    layout: false,
+    component: './TopicalArea',
   },
   {
     name: 'list.table-list-demo',
@@ -19,5 +30,6 @@
   },
   {
     component: './404',
+    layout: false
   },
 ];
