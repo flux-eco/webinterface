@@ -1,0 +1,139 @@
+---
+title: topical-area
+config:
+  formCreate: true
+  tableFilter: true
+  table: true
+formCreate:
+- title: id
+  dataIndex: topical-area_id
+  key: topical-area_id
+  valueType: number
+  required: false
+  width: m
+  formItemProps: []
+- title: name
+  dataIndex: topical-area_name
+  key: topical-area_name
+  valueType: string
+  required: false
+  width: m
+  formItemProps: []
+- title: image
+  dataIndex: topical-area_image
+  key: topical-area_image
+  valueType: string
+  required: false
+  width: m
+  formItemProps: []
+- title: description
+  dataIndex: topical-area_description
+  key: topical-area_description
+  valueType: string
+  required: false
+  width: m
+  formItemProps: []
+- title: published
+  dataIndex: topical-area_published
+  key: topical-area_published
+  valueType: number
+  required: false
+  width: m
+  formItemProps: []
+- title: ""
+  dataIndex: topical-area_
+  key: topical-area_
+  valueType: string
+  required: false
+  width: m
+  formItemProps: []
+tableFilter:
+- title: id
+  dataIndex: topical-area_id
+  key: topical-area_id
+  valueType: number
+  required: false
+  width: m
+  formItemProps: []
+- title: name
+  dataIndex: topical-area_name
+  key: topical-area_name
+  valueType: string
+  required: false
+  width: m
+  formItemProps: []
+- title: image
+  dataIndex: topical-area_image
+  key: topical-area_image
+  valueType: string
+  required: false
+  width: m
+  formItemProps: []
+- title: description
+  dataIndex: topical-area_description
+  key: topical-area_description
+  valueType: string
+  required: false
+  width: m
+  formItemProps: []
+- title: published
+  dataIndex: topical-area_published
+  key: topical-area_published
+  valueType: number
+  required: false
+  width: m
+  formItemProps: []
+- title: ""
+  dataIndex: topical-area_
+  key: topical-area_
+  valueType: string
+  required: false
+  width: m
+  formItemProps: []
+table:
+  data:
+  - title: id
+    dataIndex: topical-area_id
+    key: topical-area_id
+    valueType: number
+    required: false
+    width: m
+    formItemProps: []
+  - title: name
+    dataIndex: topical-area_name
+    key: topical-area_name
+    valueType: string
+    required: false
+    width: m
+    formItemProps: []
+  - title: image
+    dataIndex: topical-area_image
+    key: topical-area_image
+    valueType: string
+    required: false
+    width: m
+    formItemProps: []
+  - title: description
+    dataIndex: topical-area_description
+    key: topical-area_description
+    valueType: string
+    required: false
+    width: m
+    formItemProps: []
+  - title: published
+    dataIndex: topical-area_published
+    key: topical-area_published
+    valueType: number
+    required: false
+    width: m
+    formItemProps: []
+  - title: ""
+    dataIndex: topical-area_
+    key: topical-area_
+    valueType: string
+    required: false
+    width: m
+    formItemProps: []
+  total: 6
+  success: true
+...

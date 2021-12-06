@@ -18,15 +18,15 @@
     component: './TopicalArea',
   },
   {
-    name: 'list.table-list-demo',
-    icon: 'table',
-    path: '/table/:id',
+    name: 'Training Session',
+    icon: 'book',
+    path: '/session/:id',
     layout: false,
-    component: './TableListDemo',
+    component: './TrainingSession',
   },
   {
     path: '/',
-    redirect: '/table',
+    redirect: '/topicalareas',
   },
   {
     component: './404',

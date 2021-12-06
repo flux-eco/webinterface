@@ -68,11 +68,11 @@ const Modules: React.FC = () => {
   }
   
   const getCreateForm = async (): Promise<API.TablePageDefinition> => {
-    const {table}: any = await getTablePageDefinition({projectionName: tsProjection});
+    const form: API.TablePageDefinition = await getTablePageDefinition({projectionName: tsProjection});
   
-    console.log('got Form: ', table);
+    console.log('got Form: ', form);
   
-    return table.data;
+    return form;
   }
   
 
@@ -136,7 +136,7 @@ const Modules: React.FC = () => {
   }, [location]);
 
   const navigate = (id: number) => {
-    history.push(`/session/${id}`)
+
   }
 
   const addRawTs = (r: any) => {
@@ -200,25 +200,7 @@ const Modules: React.FC = () => {
       case 'edit':
         return (
           <>
-          <div className={classNames(styles.toolbar)}>
-            <Button 
-              type="primary"
-              onClick={() => {history.replace('/topicalareas')}}><LeftOutlined /> Back</Button>
-            <div>
-              <Button type="primary"><SaveOutlined /> Save</Button>
-              <Button type="primary"><CheckOutlined /> Publish</Button>
-              <Button type="primary" danger><DeleteOutlined /> Delete</Button>
-            </div>
-          </div>
-          <BetaSchemaForm<API.Item>
-                onFinish={async (values) => {
-                  handleAdd({
-                    projectionName: tsProjection,
-                  }, values);
-                  addRawTs(values);
-                }}
-                columns={createForm}
-              ></BetaSchemaForm>
+          
         </>
         )
       default:
@@ -233,11 +215,25 @@ const Modules: React.FC = () => {
 
   return (
     <PageContainer>
-      <div className={classNames(styles.navList)}>
-        <a onClick={() => {history.replace(`/topicalareas/${params.id}/list`)}}>List</a>
-        <a onClick={() => {history.replace(`/topicalareas/${params.id}/edit`)}}>Edit</a>
+      <div className={classNames(styles.toolbar)}>
+        <Button 
+          type="primary"
+          onClick={() => {history.goBack()}}><LeftOutlined /> Back</Button>
+        <div>
+          <Button type="primary"><SaveOutlined /> Save</Button>
+          <Button type="primary"><CheckOutlined /> Publish</Button>
+          <Button type="primary" danger><DeleteOutlined /> Delete</Button>
+        </div>
       </div>
-      {getPage()}
+      <BetaSchemaForm<API.Item>
+            onFinish={async (values) => {
+              handleAdd({
+                projectionName: tsProjection,
+              }, values);
+              addRawTs(values);
+            }}
+            columns={createForm}
+          ></BetaSchemaForm>
     </PageContainer>
   );
 };
