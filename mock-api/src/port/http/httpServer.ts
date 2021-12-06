@@ -8,6 +8,7 @@ const app = express();
 const port = process.env.PORT || 8010;
 
 app.use(express.json());
+app.use(express.static('public'))
 
 app.use('/api/v1/topical-area', topicalAreaRouter)
 app.use('/api/v1/training-session', trainingSessionRouter)

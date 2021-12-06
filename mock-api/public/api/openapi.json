@@ -1,0 +1,461 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "flux-ecosystem",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8010"
+    },
+    {
+      "url": "http://localhost:8010"
+    }
+  ],
+  "paths": {
+    "/api/v1/{projectionName}/list": {
+      "summary": "list projection data",
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "description": "list",
+        "operationId": "getProjectionList",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectionName",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectionList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{projectionName}/item/{id}": {
+      "summary": "projection item",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "projectionName",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+        },
+        {
+          "in": "path",
+          "name": "id",
+          "schema": {
+            "type": "integer"
+          },
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "description": "show",
+        "operationId": "getItem",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{projectionName}/item/{id}/update": {
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "description": "update all corresponding aggregateRoots",
+        "operationId": "updateAggregateRoots",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Item"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{projectionName}/item/create": {
+      "put": {
+        "tags": [
+          "api"
+        ],
+        "description": "add",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Item"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{projectionName}/item/{id}/delete:": {
+      "delete": {
+        "tags": [
+          "api"
+        ],
+        "description": "remove",
+        "operationId": "deleteItem",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modulelist": {
+      "summary": "getModuleList",
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "description": "list of Modules",
+        "operationId": "getModuleList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Modules"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tablePageDefinition/{projectionName}": {
+      "summary": "table page definition",
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "description": "table page",
+        "operationId": "getTablePageDefinition",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TablePageDefinition"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/editFormPageDefinition/{projectionName}": {
+      "summary": "editFormPageDefinition",
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "description": "overview page",
+        "operationId": "getEditFormPageDefinition",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditFormPageDefinition"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TablePageDefinition": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "TopicalArea": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      },
+      "TrainingSession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "areaId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "properties": {}
+      },
+      "ProjectionList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array"
+          },
+          "total": {
+            "type": "integer",
+            "description": "total Modules",
+            "format": "int32"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EditFormPageDefinition": {
+        "type": "array"
+      },
+      "schemaObjectApi": {
+        "type": "object",
+        "properties": {
+          "apiDefinition": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "operationType": {
+            "type": "string"
+          },
+          "apiLink": {
+            "type": "string"
+          }
+        }
+      },
+      "ListSource": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "Modules": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Module"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "total Modules",
+            "format": "int32"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Module": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "required": [
+          "errorCode"
+        ],
+        "type": "object",
+        "properties": {
+          "errorCode": {
+            "type": "string",
+            "description": "42"
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "Error"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Success"
+          }
+        }
+      }
+    }
+  }
+}
