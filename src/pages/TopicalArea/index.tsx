@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import { create, getModuleList, getProjectionList, getTablePageDefinition } from '@/services/flux-eco-system/api';
+import { create, deleteItem, getModuleList, getProjectionList, getTablePageDefinition, updateItem } from '@/services/flux-eco-system/api';
 import { history } from '@/.umi/core/history';
-import { Avatar, Button, List, message } from 'antd';
-import { CheckOutlined, DeleteOutlined, LeftOutlined, PlusOutlined, RightOutlined, SaveOutlined } from '@ant-design/icons';
+import { Avatar, Button, List, message, Modal } from 'antd';
+import { CheckOutlined, CloseOutlined, DeleteOutlined, LeftOutlined, PlusOutlined, RightOutlined, SaveOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
 import styles from './style.less'
 import { BetaSchemaForm } from '@ant-design/pro-form';
@@ -12,41 +12,8 @@ import { useParams } from 'react-router';
 const tsProjection = 'training-session';
 const areaProjection = 'topical-area';
 
-const handleAdd = async (
-  params: {
-    projectionName: string;
-  },
-  fields: API.Item) => {
-
-    const hide = message.loading('loading');
-    try {
-      console.log(fields)
-      fields.type = tsProjection
-      await create(params, fields);
-      hide();
-      message.success('Added successfully');
-      return true;
-    } catch (error) {
-      hide();
-      message.error('Adding failed, please try again!');
-      return false;
-    }
-  };
-
-// Put request
-const handleSave = async (): Promise<void> => {
-
-}
 
 
-// Put request to change publish mode
-const handlePublish = async (): Promise<void> => {
-
-}
-
-const handleDelete = async (): Promise<void> => {
-
-}
 
 
 
@@ -58,33 +25,35 @@ const Modules: React.FC = () => {
   const [pageId, setPageId] = useState<any>('list')
   const [createForm, setCreateForm] = useState<any[]>([])
   const [editForm, setEditForm] = useState<any[]>([])
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [hasChange, setHasChange] = useState<boolean>(false);
 
-  const getEditForm = async (): Promise<API.TablePageDefinition> => {
-    const form: API.TablePageDefinition = await getTablePageDefinition({projectionName: areaProjection});
-  
-    console.log('got Form: ', form);
-  
-    return form;
+  const getEditForm = async (): Promise<any[]> => {
+    const {table}: any = await getTablePageDefinition({projectionName: areaProjection});
+    
+    return table.data;
   }
   
-  const getCreateForm = async (): Promise<API.TablePageDefinition> => {
+  const getCreateForm = async (): Promise<any[]> => {
     const {table}: any = await getTablePageDefinition({projectionName: tsProjection});
-  
-    console.log('got Form: ', table);
-  
+    
     return table.data;
   }
   
 
-  const getTSessionList = async (): Promise<API.TrainingSession[]> => {
+  const getTSessionList = async (areaId: string): Promise<API.TrainingSession[]> => {
+    console.log('query: ', `?${tsProjection}_areaId=${areaId}`)
     const tSessionList = await getProjectionList({
-      projectionName: 'training-session'
+      projectionName: tsProjection,
+      query: `?${tsProjection}_areaId=${areaId}`
     }) as any[];
+
+
   
     return tSessionList.map(r => {
         return {
-          id: r[`${tsProjection}_id`],
-          areaId: r[`${tsProjection}_area_id`],
+          id: r[`_id`],
+          areaId: r[`${tsProjection}_areaId`],
           key: r[`${tsProjection}_key`],
           name: r[`${tsProjection}_name`],
           image: r[`${tsProjection}_image`],
@@ -98,33 +67,77 @@ const Modules: React.FC = () => {
       projectionName: 'topical-area'
     })) as any[];
     
-    areaList.map(r => {
-      return {
-        id: r[`${areaProjection}_id`],
-        key: r[`${areaProjection}_session_key`],
-        name: r[`${areaProjection}_session_name`],
-        image: r[`${areaProjection}_session_image`],
-        description: r[`${areaProjection}_session_description`]
-      } as API.TopicalArea
+    const areas = areaList.map(r => {
+      return rawToArea(r);
     })
     
-    return areaList?.find((area: API.TopicalArea) => area.id == +params.id) as API.TopicalArea;
+    return areas?.find((area: API.TopicalArea) => area.id == params.id) as API.TopicalArea;
+  }
+
+  const handleDelete = async (): Promise<void> => {
+    try {
+      deleteItem({
+        projectionName: areaProjection,
+        id: params.id
+      }).then(val => {
+        history.goBack();
+        setIsModalVisible(false);
+
+      }).catch(err => {
+        message.error('delete failed')
+      })
+    } catch(err) {
+      console.error(err)
+    }
+  }  
+
+  const handlePublish = async (mode: boolean): Promise<void> => {
+    console.log('publish')
+    try {
+      const ts: any = area;
+      ts.published = mode;
+      updateItem({
+        projectionName: areaProjection,
+        id: params.id
+      }, areaToRaw(ts)).then(val => {
+        fetchData();
+      })
+    } catch(err) {
+      console.error(err)
+    }
+  }
+
+  const handleSave = async (): Promise<void> => {
+    const hide = message.loading('loading');
+    try {
+      await updateItem({
+        projectionName: areaProjection,
+        id: params.id
+      }, areaToRaw(area));
+      hide();
+      setHasChange(false)
+      message.success('Added successfully');
+    } catch (error) {
+      hide();
+      message.error('Adding failed, please try again!');
+    }
   }
 
   const fetchData = async () => {
     console.log('fetching data');
     try {
-      setArea(await getTopicalArea());
+      const a = await getTopicalArea()
+      setArea(a);
 
       if (pageId === 'list') {
-        console.log('init list page')
         setCreateForm(await getCreateForm());
-        console.log('createForm: ', createForm);
-        setTsList(await getTSessionList());
+        setTsList(await getTSessionList(a.id as string));
         console.log('tsList: ', tsList);
       } else {
-        setEditForm(await getEditForm());
+
       }
+      setEditForm(await getEditForm());
+      console.log('editForm: ', editForm);
     } catch (err) {
       console.error('Fetch Data failed ', err)
     }
@@ -135,21 +148,92 @@ const Modules: React.FC = () => {
     fetchData();
   }, [location]);
 
+  const handleAdd = async (
+    params: {
+      projectionName: string;
+    },
+    fields: API.Item) => 
+    {
+      const hide = message.loading('loading');
+      fields[`${tsProjection}_areaId`] = area.id;
+
+      create(params, fields).then(res => {
+        addRawTs(res);
+        hide();
+        message.success('Added successfully');
+      }).catch(err => {
+        hide();
+        message.error('Duplicate Name')
+      });
+
+    };
+
   const navigate = (id: number) => {
     history.push(`/session/${id}`)
   }
+  
 
   const addRawTs = (r: any) => {
     console.log(r)
 
     setTsList([...tsList, {
-      id: r[`${tsProjection}_id`],
+      id: r[`_id`],
       name: r[`${tsProjection}_name`],
       image: r[`${tsProjection}_image`],
       description: r[`${tsProjection}_description`],
-      color: r[`${tsProjection}_color`]
+      published: r[`${areaProjection}_published`]
     } as API.TopicalArea]);
   }
+
+  const rawToArea = (raw: any): API.TrainingSession => {
+    return {
+      id: raw['_id'],
+      name: raw[`${areaProjection}_name`],
+      color: raw[`${areaProjection}_color`],
+      description: raw[`${areaProjection}_description`],
+      image: raw[`${areaProjection}_image`],
+      published: raw[`${areaProjection}_published`]
+    } as API.TrainingSession;
+  }
+
+  const areaToRaw = (ts: API.TrainingSession): any => {
+    let raw: any = {};
+    Object.keys(ts).forEach(key => {
+      if (key === 'id') {
+        raw['_id'] = ts[key];
+      } else {
+        raw[`${areaProjection}_${key}`] = ts[key];
+      }
+    })
+
+    return raw;
+  }
+
+  const mergeObj = (src: any, target: any) => {
+    const merge = {};
+
+    Object.keys(target).forEach(key => {
+      if (src[key] != undefined) {
+        merge[key] = src[key];
+      } else {
+        merge[key] = target[key];
+      }
+    });
+
+    return merge
+  }
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
 
   const getPage = () => {
     switch (pageId) {
@@ -169,7 +253,6 @@ const Modules: React.FC = () => {
                   handleAdd({
                     projectionName: tsProjection,
                   }, values);
-                  addRawTs(values);
                 }}
                 columns={createForm}
               ></BetaSchemaForm>
@@ -183,7 +266,6 @@ const Modules: React.FC = () => {
                 <List.Item
                   className={classNames(styles.listItem)}
                   onClick={() => {navigate(item.id)}}
-                  actions={[<a key="list-loadmore-edit">edit</a>]}
                 >
                   <List.Item.Meta
                     avatar={<Avatar src={item.image} />}
@@ -200,25 +282,82 @@ const Modules: React.FC = () => {
       case 'edit':
         return (
           <>
-          <div className={classNames(styles.toolbar)}>
-            <Button 
-              type="primary"
-              onClick={() => {history.replace('/topicalareas')}}><LeftOutlined /> Back</Button>
-            <div>
-              <Button type="primary"><SaveOutlined /> Save</Button>
-              <Button type="primary"><CheckOutlined /> Publish</Button>
-              <Button type="primary" danger><DeleteOutlined /> Delete</Button>
+            <div className={classNames(styles.toolbar)}>
+              <Button 
+                type="primary"
+                onClick={() => {history.replace('/topicalareas')}}><LeftOutlined /> Back</Button>
+              <div>
+                <Button
+                  type="primary"
+                  disabled={!hasChange}
+                  onClick={() => handleSave()}><SaveOutlined /> Save</Button>
+                <Button 
+                  type="primary"
+                  disabled={area?.published}
+                  onClick={() => handlePublish(true)}
+                  ><CheckOutlined /> Publish</Button>
+                <Button 
+                  type="primary"
+                  disabled={!area?.published}
+                  onClick={() => handlePublish(false)}
+                  ><CloseOutlined /> Hide</Button>
+                <Button
+                  type="primary"
+                  danger
+                  onClick={() => showModal()}><DeleteOutlined /> Delete</Button>
+              </div>
             </div>
-          </div>
-          <BetaSchemaForm<API.Item>
-                onFinish={async (values) => {
-                  handleAdd({
-                    projectionName: tsProjection,
-                  }, values);
-                  addRawTs(values);
-                }}
-                columns={createForm}
-              ></BetaSchemaForm>
+            <div className={classNames(styles.formContainer)}>
+              <div className={classNames(styles.form)}>
+                <BetaSchemaForm<API.Item>
+                  onFinish={async (values) => {
+                    console.log('values: ', values)
+                    console.log('newData', mergeObj(rawToArea(values), area))
+                    setArea(mergeObj(rawToArea(values), area));
+                    setHasChange(true);
+                  }}
+                  onReset={async () => {
+                    if (hasChange) {
+                      setHasChange(false);
+                      fetchData();
+                    }
+                  }}
+                  columns={editForm}
+                ></BetaSchemaForm>
+              </div>
+              <div>
+              <div className={classNames(styles.preview)}>
+                <div className={classNames(styles.clipPath)}>
+                    <div
+                      className={classNames(styles.flap)}
+                      style={{'backgroundColor': area?.color}}></div>
+                    <div className={classNames(styles.content)}>
+                      <img src={area?.image}/>
+                      <h1>{area?.name?.toUpperCase()}</h1>
+                    </div>
+                  </div>
+                </div>
+                <div style={{'marginTop': '3em'}}>
+                  <h3>Description</h3>
+                  <p>{area?.description}</p>
+                </div>
+              </div>
+            </div>
+            <Modal
+              visible={isModalVisible}
+              onCancel={() => handleCancel()}
+              footer={[
+                <Button type="primary" key="delete" danger onClick={() => handleDelete()}>
+                  <DeleteOutlined /> Delete
+                </Button>,
+                <Button type="primary" key="cancel" onClick={() => handleCancel()}>
+                  Cancel
+                </Button>,
+              ]}>
+              <h1
+                style={{'textAlign': 'center', 'margin': 0}}
+              >Are you sure?</h1>
+            </Modal>
         </>
         )
       default:
@@ -226,10 +365,6 @@ const Modules: React.FC = () => {
         return
     }
   }
-
-
-  // asyncFetch();
-
 
   return (
     <PageContainer>

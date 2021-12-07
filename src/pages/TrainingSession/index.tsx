@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import { create, getModuleList, getProjectionList, getTablePageDefinition } from '@/services/flux-eco-system/api';
+import { create, deleteItem, getItem, getTablePageDefinition, updateItem } from '@/services/flux-eco-system/api';
 import { history } from '@/.umi/core/history';
-import { Avatar, Button, List, message } from 'antd';
-import { CheckOutlined, DeleteOutlined, LeftOutlined, PlusOutlined, RightOutlined, SaveOutlined } from '@ant-design/icons';
+import { Avatar, Button, List, message, Modal } from 'antd';
+import { CheckOutlined, CloseOutlined, DeleteOutlined, LeftOutlined, SaveOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
 import styles from './style.less'
 import { BetaSchemaForm } from '@ant-design/pro-form';
@@ -20,8 +20,6 @@ const handleAdd = async (
 
     const hide = message.loading('loading');
     try {
-      console.log(fields)
-      fields.type = tsProjection
       await create(params, fields);
       hide();
       message.success('Added successfully');
@@ -33,185 +31,147 @@ const handleAdd = async (
     }
   };
 
-// Put request
-const handleSave = async (): Promise<void> => {
-
-}
-
-
-// Put request to change publish mode
-const handlePublish = async (): Promise<void> => {
-
-}
-
-const handleDelete = async (): Promise<void> => {
-
-}
-
 
 
 const Modules: React.FC = () => {
   const location = history.location.pathname;
   const params: any = useParams()
-  const [area, setArea] = useState<API.TopicalArea>({})
-  const [tsList, setTsList] = useState<API.TrainingSession[]>([])
-  const [pageId, setPageId] = useState<any>('list')
-  const [createForm, setCreateForm] = useState<any[]>([])
-  const [editForm, setEditForm] = useState<any[]>([])
+  const [trainingSession, setTrainingSession] = useState<API.TrainingSession>({});
+  const [editForm, setEditForm] = useState<any[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [hasChange, setHasChange] = useState<boolean>(false);
 
-  const getEditForm = async (): Promise<API.TablePageDefinition> => {
-    const form: API.TablePageDefinition = await getTablePageDefinition({projectionName: areaProjection});
-  
-    console.log('got Form: ', form);
-  
-    return form;
-  }
-  
-  const getCreateForm = async (): Promise<API.TablePageDefinition> => {
-    const form: API.TablePageDefinition = await getTablePageDefinition({projectionName: tsProjection});
-  
-    console.log('got Form: ', form);
-  
-    return form;
-  }
-  
-
-  const getTSessionList = async (): Promise<API.TrainingSession[]> => {
-    const tSessionList = await getProjectionList({
-      projectionName: 'training-session'
-    }) as any[];
-  
-    return tSessionList.map(r => {
-        return {
-          id: r[`${tsProjection}_id`],
-          areaId: r[`${tsProjection}_area_id`],
-          key: r[`${tsProjection}_key`],
-          name: r[`${tsProjection}_name`],
-          image: r[`${tsProjection}_image`],
-          description: r[`${tsProjection}_description`]
-        } as API.TrainingSession
-      }) as API.TrainingSession[];
-  }
-
-  const getTopicalArea = async (): Promise<API.TopicalArea> => {
-    const areaList = (await getProjectionList({
-      projectionName: 'topical-area'
-    })) as any[];
+  const getEditForm = async (): Promise<API.TablePageDefinition[]> => {
+    const {table}: any = await getTablePageDefinition({projectionName: tsProjection});
     
-    areaList.map(r => {
-      return {
-        id: r[`${areaProjection}_id`],
-        key: r[`${areaProjection}_session_key`],
-        name: r[`${areaProjection}_session_name`],
-        image: r[`${areaProjection}_session_image`],
-        description: r[`${areaProjection}_session_description`]
-      } as API.TopicalArea
-    })
-    
-    return areaList?.find((area: API.TopicalArea) => area.id == +params.id) as API.TopicalArea;
+    return table.data;
+  }
+
+  const getTrainingSession = async (id: string): Promise<API.TrainingSession> => {
+    try {
+      const res: API.TrainingSession = (await getItem({
+        projectionName: tsProjection,
+        id: id
+      }))[0];
+
+      return rawToTS(res);
+    } catch(err) {
+      console.error(err)
+    }
+  }
+
+  const handleDelete = async (): Promise<void> => {
+    try {
+      deleteItem({
+        projectionName: tsProjection,
+        id: params.id
+      }).then(val => {
+        history.goBack();
+        setIsModalVisible(false);
+
+      }).catch(err => {
+        message.error('delete failed')
+      })
+    } catch(err) {
+      console.error(err)
+    }
+  }  
+
+  const handlePublish = async (mode: boolean): Promise<void> => {
+    console.log('publish')
+    try {
+      const ts: any = trainingSession;
+      ts.published = mode;
+      updateItem({
+        projectionName: tsProjection,
+        id: params.id
+      }, tsToRaw(ts)).then(val => {
+        fetchData();
+      })
+    } catch(err) {
+      console.error(err)
+    }
+  }
+
+  const handleSave = async (): Promise<void> => {
+    const hide = message.loading('loading');
+    try {
+      await updateItem({
+        projectionName: tsProjection,
+        id: params.id
+      }, tsToRaw(trainingSession));
+      hide();
+      setHasChange(false)
+      message.success('Added successfully');
+    } catch (error) {
+      hide();
+      message.error('Adding failed, please try again!');
+    }
   }
 
   const fetchData = async () => {
-    console.log('fetching data');
     try {
-      setArea(await getTopicalArea());
-
-      if (pageId === 'list') {
-        console.log('init list page')
-        setCreateForm(await getCreateForm());
-        console.log('createForm: ', createForm);
-        setTsList(await getTSessionList());
-        console.log('tsList: ', tsList);
-      } else {
-        setEditForm(await getEditForm());
-      }
+      setEditForm(await getEditForm());
+      setTrainingSession(await getTrainingSession(params.id));
+      console.log(trainingSession);
     } catch (err) {
       console.error('Fetch Data failed ', err)
     }
   };
 
   useEffect(() => {
-    setPageId(params.page);
     fetchData();
   }, [location]);
 
-  const navigate = (id: number) => {
+  useEffect(() => {
+    console.log('ts: ', trainingSession)
+  }, [trainingSession])
 
+  const rawToTS = (raw: any): API.TrainingSession => {
+    return {
+      id: raw['_id'],
+      areaId: raw[`${tsProjection}_areaId`],
+      name: raw[`${tsProjection}_name`],
+      description: raw[`${tsProjection}_description`],
+      image: raw[`${tsProjection}_image`],
+      published: raw[`${tsProjection}_published`]
+    } as API.TrainingSession;
   }
 
-  const addRawTs = (r: any) => {
-    console.log(r)
+  const tsToRaw = (ts: API.TrainingSession): any => {
+    let raw: any = {};
+    Object.keys(ts).forEach(key => {
+      if (key === 'id') {
+        raw['_id'] = ts[key];
+      } else {
+        raw[`${tsProjection}_${key}`] = ts[key];
+      }
+    })
 
-    setTsList([...tsList, {
-      id: r[`${tsProjection}_id`],
-      name: r[`${tsProjection}_name`],
-      image: r[`${tsProjection}_image`],
-      description: r[`${tsProjection}_description`],
-      color: r[`${tsProjection}_color`]
-    } as API.TopicalArea]);
+    return raw;
   }
 
-  const getPage = () => {
-    switch (pageId) {
-      case 'list':
-        return (
-          <>
-          <div className={classNames(styles.toolbar)}>
-            <Button 
-              type="primary"
-              onClick={() => {history.replace('/topicalareas')}}><LeftOutlined /> Back</Button>
-            <div>
-              <BetaSchemaForm<API.Item>
-                trigger={<Button type="primary"><PlusOutlined /> Add New</Button>}
-                width='400px'
-                layoutType='ModalForm'
-                onFinish={async (values) => {
-                  handleAdd({
-                    projectionName: tsProjection,
-                  }, values);
-                  addRawTs(values);
-                }}
-                columns={createForm}
-              ></BetaSchemaForm>
-            </div>
-          </div>
-          <List
-            dataSource={tsList}
-            className={classNames(styles.list)}
-            renderItem={(item: API.TrainingSession) =>
-              (
-                <List.Item
-                  className={classNames(styles.listItem)}
-                  onClick={() => {navigate(item.id)}}
-                  actions={[<a key="list-loadmore-edit">edit</a>]}
-                >
-                  <List.Item.Meta
-                    avatar={<Avatar src={item.image} />}
-                    title={item.name}
-                    description={item.description}
-                  />
-                  <div><RightOutlined /></div>
-                </List.Item>
-              )
-            }>
-            </List>
-          </>
-        )
-      case 'edit':
-        return (
-          <>
-          
-        </>
-        )
-      default:
-        setPageId('list');
-        return
-    }
+  const mergeObj = (src: any, target: any) => {
+    const merge = {};
+
+    Object.keys(target).forEach(key => {
+      if (src[key] != undefined) {
+        merge[key] = src[key];
+      } else {
+        merge[key] = target[key];
+      }
+    });
+
+    return merge
   }
 
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
 
-  // asyncFetch();
-
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
 
   return (
     <PageContainer>
@@ -220,20 +180,84 @@ const Modules: React.FC = () => {
           type="primary"
           onClick={() => {history.goBack()}}><LeftOutlined /> Back</Button>
         <div>
-          <Button type="primary"><SaveOutlined /> Save</Button>
-          <Button type="primary"><CheckOutlined /> Publish</Button>
-          <Button type="primary" danger><DeleteOutlined /> Delete</Button>
+          <Button
+            type="primary"
+            disabled={!hasChange}
+            onClick={() => handleSave()}><SaveOutlined /> Save</Button>
+          <Button 
+            type="primary"
+            disabled={trainingSession?.published}
+            onClick={() => handlePublish(true)}
+            ><CheckOutlined /> Publish</Button>
+          <Button 
+            type="primary"
+            disabled={!trainingSession?.published}
+            onClick={() => handlePublish(false)}
+            ><CloseOutlined /> Hide</Button>
+          <Button
+            type="primary"
+            danger
+            onClick={() => showModal()}><DeleteOutlined /> Delete</Button>
         </div>
       </div>
-      <BetaSchemaForm<API.Item>
+      <div className={classNames(styles.formContainer)}>
+        <div className={classNames(styles.form)}>
+          <BetaSchemaForm<API.Item>
             onFinish={async (values) => {
-              handleAdd({
-                projectionName: tsProjection,
-              }, values);
-              addRawTs(values);
+              setTrainingSession(mergeObj(rawToTS(values), trainingSession));
+              setHasChange(true);
             }}
-            columns={createForm}
+            onReset={async () => {
+              if (hasChange) {
+                setHasChange(false);
+                fetchData();
+              }
+            }}
+            columns={editForm}
           ></BetaSchemaForm>
+        </div>
+        <div>
+          <div className={classNames(styles.preview)}>
+            <div className={classNames(styles.clipPath)}>
+              <div
+                className={classNames(styles.flap)}></div>
+              <div
+                className={classNames(styles.imgContainer)}
+                style={
+                  {
+                    'background': `url(${trainingSession?.image})`,
+                    'backgroundRepeat': 'no-repeat',
+                    'backgroundSize': 'cover',
+                    'backgroundPositionY': 'center'
+                  }}>
+                  <div className={classNames(styles.darken)}></div>
+                </div>
+              <div className={classNames(styles.textContainer)}>
+                <h1>{trainingSession?.name}</h1>
+              </div>
+            </div>
+          </div>
+          <div style={{'marginTop': '3em'}}>
+            <h3>Description</h3>
+            <p>{trainingSession?.description}</p>
+          </div>
+        </div>
+      </div>
+      <Modal
+        visible={isModalVisible}
+        onCancel={() => handleCancel()}
+        footer={[
+          <Button type="primary" key="delete" danger onClick={() => handleDelete()}>
+            <DeleteOutlined /> Delete
+          </Button>,
+          <Button type="primary" key="cancel" onClick={() => handleCancel()}>
+            Cancel
+          </Button>,
+        ]}>
+        <h1
+          style={{'textAlign': 'center', 'margin': 0}}
+        >Are you sure?</h1>
+      </Modal>
     </PageContainer>
   );
 };

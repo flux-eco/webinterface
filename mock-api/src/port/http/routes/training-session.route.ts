@@ -24,7 +24,8 @@ router.post('/item/:id/update', (req, res) => {
     createEvent(TrainingSessionEvents.UPDATE, req).then(e => e.watch('end', async () => {e.respond(res)}));
 })
 
-router.delete('/item/:id', (req, res) => {
+router.delete('/item/:id/delete', (req, res) => {
+    req.query._id = {_id: req.params.id}
     createEvent(TrainingSessionEvents.DELETE, req).then(e => e.watch('end', async () => {e.respond(res)}));
 })
 

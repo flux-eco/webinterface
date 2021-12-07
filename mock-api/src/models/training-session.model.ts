@@ -21,7 +21,6 @@ const trainingSessionSchema = new Schema<TrainingSession>({
     'training-session_name': {
         type: String,
         required: true,
-        unique: true
     },
     'training-session_image': [String],
     'training-session_description': {

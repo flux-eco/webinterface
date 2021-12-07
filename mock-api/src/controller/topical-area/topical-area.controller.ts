@@ -31,7 +31,7 @@ event(TopicalAreaEvents.CREATE, ['start', async function() {
 
         const area = new TopicalArea(
             Object.assign(self.payload.body, {
-                _id: self.payload.body['topical-area_name'],
+                _id: self.payload.body['topical-area_name'].trim().replace(new RegExp(' ', 'g'), '_'),
                 seq: seq ? seq + 1 : 1
             }));
     
@@ -39,6 +39,19 @@ event(TopicalAreaEvents.CREATE, ['start', async function() {
 
         self.status(201).msg(area).next();
     } catch (err) {
+        self.status(500).msg(500).complete();
+        throw Error(err);
+    }
+}])
+
+event(TopicalAreaEvents.UPDATE, ['start', async function() {
+    const self: Action<any> = this;
+    try {
+        console.log(self.payload.body);
+        await TopicalArea.findByIdAndUpdate(self.payload.body._id, self.payload.body);
+
+        self.status(200).next();
+    }  catch (err) {
         self.status(500).msg(500).complete();
         throw Error(err);
     }

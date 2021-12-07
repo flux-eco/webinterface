@@ -24,7 +24,7 @@ router.post('/item/:id/update', (req, res) => {
     createEvent(TopicalAreaEvents.UPDATE, req).then(e => e.watch('end', async () => {e.respond(res)}));
 })
 
-router.delete('/item/:id', (req, res) => {
+router.delete('/item/:id/delete', (req, res) => {
     createEvent(TopicalAreaEvents.DELETE, req).then(e => e.watch('end', async () => {e.respond(res)}));
 })
 

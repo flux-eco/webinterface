@@ -10,26 +10,6 @@ import { BetaSchemaForm } from '@ant-design/pro-form';
 
 const areaProjection = 'topical-area'
 
-
-const handleAdd = async (
-  params: {
-    projectionName: string;
-  },
-  fields: API.Item) => {
-
-    const hide = message.loading('loading');
-    try {
-      await create(params, fields);
-      hide();
-      message.success('Added successfully');
-      return true;
-    } catch (error) {
-      hide();
-      message.error('Adding failed, please try again!');
-      return false;
-    }
-  };
-
 const Modules: React.FC = () => {
   const location = history.location.pathname;
   const [areas, setAreas] = useState<API.TopicalArea[]>([])
@@ -49,7 +29,7 @@ const Modules: React.FC = () => {
 
       const a: API.TopicalArea[] = (list as any[]).map(r => {
         return {
-          id: r[`${areaProjection}_id`],
+          id: r[`_id`],
           name: r[`${areaProjection}_name`],
           image: r[`${areaProjection}_image`],
           description: r[`${areaProjection}_description`],
@@ -63,11 +43,29 @@ const Modules: React.FC = () => {
     }
   };
 
-  const addRawArea = (r: any) => {
-    console.log(r)
+  const handleAdd = async (
+    params: {
+      projectionName: string;
+    },
+    fields: API.Item) => {
+  
+      const hide = message.loading('loading');
+      try {
+        const res = await create(params, fields);
+        hide();
+        addRawArea(res);
+        message.success('Added successfully');
+        return true;
+      } catch (error) {
+        hide();
+        message.error('Adding failed, please try again!');
+        return false;
+      }
+    };
 
+  const addRawArea = (r: any) => {
     setAreas([...areas, {
-      id: r[`${areaProjection}_id`],
+      id: r[`_id`],
       name: r[`${areaProjection}_name`],
       image: r[`${areaProjection}_image`],
       description: r[`${areaProjection}_description`],
@@ -93,7 +91,6 @@ const Modules: React.FC = () => {
           handleAdd({
             projectionName: areaProjection,
           }, values);
-          addRawArea(values);
         }}
         columns={form}
       ></BetaSchemaForm>
@@ -105,7 +102,6 @@ const Modules: React.FC = () => {
             <List.Item
               className={classNames(styles.listItem)}
               onClick={() => {navigate(item.id, 'list')}}
-              actions={[<a key="list-loadmore-edit" onClick={() => navigate(item.id, 'edit')}>edit</a>]}
             >
               <List.Item.Meta
                 avatar={<Avatar style={{backgroundColor: item.color}} />}

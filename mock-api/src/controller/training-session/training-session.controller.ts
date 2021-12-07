@@ -28,10 +28,17 @@ event(TrainingSessionEvents.CREATE, ['start', async function() {
             .find()
             .sort({seq : -1})
             .limit(1))[0]?.seq;
+        
+        const id = `${self.payload.body['training-session_areaId']}_${self.payload.body['training-session_name']}`.trim().replace(new RegExp(' ', 'g'), '_');
+
+        if ((await TrainingSession.findById(id))?._id !== undefined) {
+            self.status(409).msg('Duplicate name').complete();
+            return;
+        }
 
         const area = new TrainingSession(
             Object.assign(self.payload.body, {
-                _id: self.payload.body['training-session_name'],
+                _id: id,
                 seq: seq ? seq + 1 : 1
             }));
     
@@ -39,6 +46,19 @@ event(TrainingSessionEvents.CREATE, ['start', async function() {
 
         self.status(201).msg(area).next();
     } catch (err) {
+        self.status(500).msg(500).complete();
+        throw Error(err);
+    }
+}])
+
+event(TrainingSessionEvents.UPDATE, ['start', async function() {
+    const self: Action<any> = this;
+    try {
+        console.log(self.payload.body);
+        await TrainingSession.findByIdAndUpdate(self.payload.body._id, self.payload.body);
+
+        self.status(200).next();
+    }  catch (err) {
         self.status(500).msg(500).complete();
         throw Error(err);
     }
