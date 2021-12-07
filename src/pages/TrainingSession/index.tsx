@@ -225,15 +225,12 @@ const Modules: React.FC = () => {
                 className={classNames(styles.imgContainer)}
                 style={
                   {
-                    'background': `url(${trainingSession?.image})`,
-                    'backgroundRepeat': 'no-repeat',
-                    'backgroundSize': 'cover',
-                    'backgroundPositionY': 'center'
+                    'background': `url(${trainingSession?.image})`
                   }}>
                   <div className={classNames(styles.darken)}></div>
                 </div>
               <div className={classNames(styles.textContainer)}>
-                <h1>{trainingSession?.name}</h1>
+                <h1>{trainingSession?.name?.toUpperCase()}</h1>
               </div>
             </div>
           </div>
