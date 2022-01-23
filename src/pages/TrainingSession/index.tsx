@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import { create, deleteItem, getItem, getTablePageDefinition, updateItem } from '@/services/flux-eco-system/api';
+import { create, deleteItem, getItem, getTablePageDefinition, update } from '@/services/flux-eco-system/api';
 import { history } from '@/.umi/core/history';
 import { Avatar, Button, List, message, Modal } from 'antd';
 import { CheckOutlined, CloseOutlined, DeleteOutlined, LeftOutlined, SaveOutlined } from '@ant-design/icons';
@@ -10,7 +10,7 @@ import { BetaSchemaForm } from '@ant-design/pro-form';
 import { useParams } from 'react-router';
 
 const tsProjection = 'training-session';
-const areaProjection = 'topical-area';
+const areaProjection = 'EditTopicalArea';
 
 const handleAdd = async (
   params: {
@@ -43,7 +43,7 @@ const Modules: React.FC = () => {
 
   const getEditForm = async (): Promise<API.TablePageDefinition[]> => {
     const {table}: any = await getTablePageDefinition({projectionName: tsProjection});
-    
+
     return table.data;
   }
 
@@ -75,14 +75,14 @@ const Modules: React.FC = () => {
     } catch(err) {
       console.error(err)
     }
-  }  
+  }
 
   const handlePublish = async (mode: boolean): Promise<void> => {
     console.log('publish')
     try {
       const ts: any = trainingSession;
       ts.published = mode;
-      updateItem({
+      update({
         projectionName: tsProjection,
         id: params.id
       }, tsToRaw(ts)).then(val => {
@@ -96,7 +96,7 @@ const Modules: React.FC = () => {
   const handleSave = async (): Promise<void> => {
     const hide = message.loading('loading');
     try {
-      await updateItem({
+      await update({
         projectionName: tsProjection,
         id: params.id
       }, tsToRaw(trainingSession));
@@ -176,7 +176,7 @@ const Modules: React.FC = () => {
   return (
     <PageContainer>
       <div className={classNames(styles.toolbar)}>
-        <Button 
+        <Button
           type="primary"
           onClick={() => {history.goBack()}}><LeftOutlined /> Back</Button>
         <div>
@@ -184,12 +184,12 @@ const Modules: React.FC = () => {
             type="primary"
             disabled={!hasChange}
             onClick={() => handleSave()}><SaveOutlined /> Save</Button>
-          <Button 
+          <Button
             type="primary"
             disabled={trainingSession?.published}
             onClick={() => handlePublish(true)}
             ><CheckOutlined /> Publish</Button>
-          <Button 
+          <Button
             type="primary"
             disabled={!trainingSession?.published}
             onClick={() => handlePublish(false)}

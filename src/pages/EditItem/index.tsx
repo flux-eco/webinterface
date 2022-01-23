@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import { create, deleteItem, getModuleList, getProjectionList, getTablePageDefinition, updateItem } from '@/services/flux-eco-system/api';
+import { create, deleteItem, getModuleList, getProjectionList, getTablePageDefinition, update } from '@/services/flux-eco-system/api';
 import { history } from '@/.umi/core/history';
 import { Avatar, Button, List, message, Modal } from 'antd';
 import { CheckOutlined, CloseOutlined, DeleteOutlined, LeftOutlined, PlusOutlined, RightOutlined, SaveOutlined } from '@ant-design/icons';
@@ -10,11 +10,7 @@ import { BetaSchemaForm } from '@ant-design/pro-form';
 import { useParams } from 'react-router';
 
 const tsProjection = 'training-session';
-const areaProjection = 'topical-area';
-
-
-
-
+const areaProjection = 'EdiTopicalArea';
 
 
 const Modules: React.FC = () => {
@@ -29,17 +25,17 @@ const Modules: React.FC = () => {
   const [hasChange, setHasChange] = useState<boolean>(false);
 
   const getEditForm = async (): Promise<any[]> => {
-    const {table}: any = await getTablePageDefinition({projectionName: areaProjection});
-    
-    return table.data;
+    const {tablePageDefinition}: any = await getTablePageDefinition({projectionName: areaProjection});
+
+    return tablePageDefinition.formEdit;
   }
-  
+
   const getCreateForm = async (): Promise<any[]> => {
-    const {table}: any = await getTablePageDefinition({projectionName: tsProjection});
-    
-    return table.data;
+    const {tablePageDefinition}: any = await getTablePageDefinition({projectionName: tsProjection});
+
+    return tablePageDefinition.formCreate;
   }
-  
+
 
   const getTSessionList = async (areaId: string): Promise<API.TrainingSession[]> => {
     console.log('query: ', `?${tsProjection}_areaId=${areaId}`)
@@ -49,7 +45,7 @@ const Modules: React.FC = () => {
     }) as any[];
 
 
-  
+
     return tSessionList.map(r => {
         return {
           id: r[`_id`],
@@ -64,13 +60,13 @@ const Modules: React.FC = () => {
 
   const getTopicalArea = async (): Promise<API.TopicalArea> => {
     const areaList = (await getProjectionList({
-      projectionName: 'topical-area'
+      projectionName: 'EditTopicalArea'
     })) as any[];
-    
+
     const areas = areaList.map(r => {
       return rawToArea(r);
     })
-    
+
     return areas?.find((area: API.TopicalArea) => area.id == params.id) as API.TopicalArea;
   }
 
@@ -89,14 +85,14 @@ const Modules: React.FC = () => {
     } catch(err) {
       console.error(err)
     }
-  }  
+  }
 
   const handlePublish = async (mode: boolean): Promise<void> => {
     console.log('publish')
     try {
       const ts: any = area;
       ts.published = mode;
-      updateItem({
+      update({
         projectionName: areaProjection,
         id: params.id
       }, areaToRaw(ts)).then(val => {
@@ -110,7 +106,7 @@ const Modules: React.FC = () => {
   const handleSave = async (): Promise<void> => {
     const hide = message.loading('loading');
     try {
-      await updateItem({
+      await update({
         projectionName: areaProjection,
         id: params.id
       }, areaToRaw(area));
@@ -152,7 +148,7 @@ const Modules: React.FC = () => {
     params: {
       projectionName: string;
     },
-    fields: API.Item) => 
+    fields: API.Item) =>
     {
       const hide = message.loading('loading');
       fields[`${tsProjection}_areaId`] = area.id;
@@ -171,7 +167,7 @@ const Modules: React.FC = () => {
   const navigate = (id: number) => {
     history.push(`/session/${id}`)
   }
-  
+
 
   const addRawTs = (r: any) => {
     console.log(r)
@@ -241,7 +237,7 @@ const Modules: React.FC = () => {
         return (
           <>
           <div className={classNames(styles.toolbar)}>
-            <Button 
+            <Button
               type="primary"
               onClick={() => {history.replace('/topicalareas')}}><LeftOutlined /> Back</Button>
             <div>
@@ -283,7 +279,7 @@ const Modules: React.FC = () => {
         return (
           <>
             <div className={classNames(styles.toolbar)}>
-              <Button 
+              <Button
                 type="primary"
                 onClick={() => {history.replace('/topicalareas')}}><LeftOutlined /> Back</Button>
               <div>
@@ -291,12 +287,12 @@ const Modules: React.FC = () => {
                   type="primary"
                   disabled={!hasChange}
                   onClick={() => handleSave()}><SaveOutlined /> Save</Button>
-                <Button 
+                <Button
                   type="primary"
                   disabled={area?.published}
                   onClick={() => handlePublish(true)}
                   ><CheckOutlined /> Publish</Button>
-                <Button 
+                <Button
                   type="primary"
                   disabled={!area?.published}
                   onClick={() => handlePublish(false)}

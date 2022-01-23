@@ -1,29 +1,31 @@
-// @ts-ignore
-/* eslint-disable */
-
 declare namespace API {
-  type TablePageDefinition = Record<string, any>;
-
-  type TopicalArea = {
-    id?: number;
-    name?: string;
-    image?: string;
-    description?: string;
-    color?: string;
-    published?: boolean;
+  type PageList = {
+    data?: Page[];
+    /** total Pages */
+    total?: number;
+    success?: boolean;
   };
 
-  type TrainingSession = {
-    id?: number;
-    areaId?: number;
-    name?: string;
-    image?: string;
-    description?: string;
-    color?: string;
-    published?: boolean;
+  type Page = {
+    title?: string;
+    url?: string;
+    avatar?: string;
   };
 
-  type Item = Record<string, any>;
+  type Link = {
+    title?: string;
+    url?: string;
+  };
+
+  type TablePageDefinition = {
+    title?: string;
+    formCreate?: any[];
+    formEdit?: any[];
+    tableFilter?: any[];
+    table?: any[];
+  };
+
+  type Item = {};
 
   type ProjectionList = {
     data?: any[];
@@ -68,5 +70,14 @@ declare namespace API {
     errorMessage?: string;
     /** Success */
     success?: boolean;
+  };
+
+  type getProjectionListParams = {
+    projectionName: string;
+  };
+
+  type getItemParams = {
+    projectionName: string;
+    id: number;
   };
 }

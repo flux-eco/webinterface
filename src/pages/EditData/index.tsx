@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import styles from './style.less'
 import { BetaSchemaForm } from '@ant-design/pro-form';
 
-const areaProjection = 'topical-area'
+const areaProjection = 'EditTopicalArea'
 
 const Modules: React.FC = () => {
   const location = history.location.pathname;
@@ -21,11 +21,11 @@ const Modules: React.FC = () => {
         projectionName: areaProjection
       })
 
-      const {table} = await getTablePageDefinition({
+      const {tablePageDefinition} = await getTablePageDefinition({
         projectionName: areaProjection
       }) as API.TablePageDefinition
 
-      setForm(table.data);
+      setForm(tablePageDefinition.formCreate);
 
       const a: API.TopicalArea[] = (list as any[]).map(r => {
         return {
@@ -48,7 +48,7 @@ const Modules: React.FC = () => {
       projectionName: string;
     },
     fields: API.Item) => {
-  
+
       const hide = message.loading('loading');
       try {
         const res = await create(params, fields);
@@ -113,7 +113,7 @@ const Modules: React.FC = () => {
           )
         }>
         </List>
-        
+
     </PageContainer>
   );
 };

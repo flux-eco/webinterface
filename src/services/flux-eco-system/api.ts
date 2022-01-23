@@ -2,58 +2,51 @@
 /* eslint-disable */
 import { request } from 'umi';
 
-/** list GET /api/v1/${param0}/list */
+/** list pages GET /api/v1/definition/getPages */
+export async function getPages(options?: { [key: string]: any }) {
+  return request<API.PageList>('/api/v1/definition/getPages', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** list GET /api/v1/data/${param0}/getList */
 export async function getProjectionList(
-  params: {
-    // path
-    projectionName: string;
-    query?: string
-  },
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getProjectionListParams,
   options?: { [key: string]: any },
 ) {
-  let { projectionName: param0, query: query, ...queryParams } = params;
-
-  if (query == undefined)
-    query = "";
-
-  console.log(`/api/v1/${param0}/list${query}`)
-
-  return request<API.ProjectionList>(`/api/v1/${param0}/list${query}`, {
+  const { projectionName: param0, ...queryParams } = params;
+  return request<API.ProjectionList>(`/api/v1/data/${param0}/getList`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),
   });
 }
 
-/** show GET /api/v1/${param0}/item/${param1} */
+/** show GET /api/v1/data/${param0}/item/${param1}/getItem */
 export async function getItem(
-  params: {
-    // path
-    projectionName: string;
-    id: string;
-  },
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getItemParams,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, id: param1, ...queryParams } = params;
-  return request<API.Item>(`/api/v1/${param0}/item/${param1}`, {
+  return request<API.Item>(`/api/v1/data/${param0}/item/${param1}/getItem`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),
   });
 }
 
-/** update all corresponding aggregateRoots POST /api/v1/${param0}/item/${param1}/update */
-export async function updateItem(
-  params: {
-    // path
-    projectionName: string;
-    id: string;
-  },
+/** update all corresponding aggregateRoots POST /api/v1/data/${param0}/item/${param1}/updateItem */
+export async function update(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.updateParams,
   body: API.Item,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, id: param1, ...queryParams } = params;
-  return request<any>(`/api/v1/${param0}/item/${param1}/update`, {
+  return request<any>(`/api/v1/data/${param0}/item/${param1}/updateItem`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -64,18 +57,16 @@ export async function updateItem(
   });
 }
 
-/** add POST /api/v1/${param0}/item/create */
+/** add PUT /api/v1/data/${param0}/createItem */
 export async function create(
-  params: {
-    // path
-    projectionName: string;
-  },
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.createParams,
   body: API.Item,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
-  return request<any>(`/api/v1/${param0}/item/create`, {
-    method: 'POST',
+  return request<any>(`/api/v1/data/${param0}/createItem`, {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -85,17 +76,14 @@ export async function create(
   });
 }
 
-/** remove DELETE /api/v1/${param0}/item/${param1}/delete */
+/** remove DELETE /api/v1/data/${param0}/item/${param1}/deleteItem${undefined} */
 export async function deleteItem(
-  params: {
-    // path
-    projectionName: string;
-    id: string;
-  },
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.deleteItemParams,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, id: param1, ...queryParams } = params;
-  return request<any>(`/api/v1/${param0}/item/${param1}/delete`, {
+  return request<any>(`/api/v1/data/${param0}/item/${param1}/deleteItem${undefined}`, {
     method: 'DELETE',
     params: { ...queryParams },
     ...(options || {}),
@@ -110,32 +98,28 @@ export async function getModuleList(options?: { [key: string]: any }) {
   });
 }
 
-/** table page GET /api/v1/tablePageDefinition/${param0} */
+/** table page GET /api/v1/definition/${param0}/getTablePageDefinition */
 export async function getTablePageDefinition(
-  params: {
-    // path
-    projectionName: string;
-  },
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getTablePageDefinitionParams,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
-  return request<API.TablePageDefinition>(`/api/v1/tablePageDefinition/${param0}`, {
+  return request<API.TablePageDefinition>(`/api/v1/definition/${param0}/getTablePageDefinition`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),
   });
 }
 
-/** overview page GET /api/v1/editFormPageDefinition/${param0} */
+/** overview page GET /api/v1/definition/${param0}/getEditFormDefinition */
 export async function getEditFormPageDefinition(
-  params: {
-    // path
-    projectionName: string;
-  },
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getEditFormPageDefinitionParams,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
-  return request<API.EditFormPageDefinition>(`/api/v1/editFormPageDefinition/${param0}`, {
+  return request<API.EditFormPageDefinition>(`/api/v1/definition/${param0}/getEditFormDefinition`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),
