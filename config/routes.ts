@@ -1,5 +1,12 @@
 ﻿export default [
   {
+    name: 'ListData',
+    icon: 'book',
+    path: '/listdata/:subject',
+    layout: false,
+    component: './ListData',
+  },
+  {
     name: 'EditData',
     icon: 'book',
     path: '/editdata/:subject',

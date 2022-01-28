@@ -17,6 +17,13 @@ declare namespace API {
     url?: string;
   };
 
+  type PageDefinition = {
+    title?: string;
+    avatar?: string;
+    formCreate?: any[];
+    formEdit?: any[];
+  };
+
   type TablePageDefinition = {
     title?: string;
     formCreate?: any[];
@@ -27,7 +34,7 @@ declare namespace API {
 
   type Item = {};
 
-  type ProjectionList = {
+  type itemList = {
     data?: any[];
     /** total Modules */
     total?: number;
@@ -72,7 +79,7 @@ declare namespace API {
     success?: boolean;
   };
 
-  type getProjectionListParams = {
+  type getItemListParams = {
     projectionName: string;
   };
 
