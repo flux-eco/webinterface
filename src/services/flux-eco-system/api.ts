@@ -16,7 +16,7 @@ export async function getItemList(
   params: API.getItemListParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, ...queryParams } = params;
+  const { subject: param0, ...queryParams } = params;
   return request<API.itemList>(`/api/v1/data/${param0}/getItemList`, {
     method: 'GET',
     params: { ...queryParams },
@@ -30,7 +30,7 @@ export async function getItem(
   params: API.getItemParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, id: param1, ...queryParams } = params;
+  const { subject: param0, id: param1, ...queryParams } = params;
   return request<API.Item>(`/api/v1/data/${param0}/item/${param1}/getItem`, {
     method: 'GET',
     params: { ...queryParams },
@@ -45,7 +45,7 @@ export async function update(
   body: API.Item,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, id: param1, ...queryParams } = params;
+  const { subject: param0, id: param1, ...queryParams } = params;
   return request<any>(`/api/v1/data/${param0}/item/${param1}/updateItem`, {
     method: 'POST',
     headers: {
@@ -64,7 +64,7 @@ export async function create(
   body: API.Item,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, ...queryParams } = params;
+  const { subject: param0, ...queryParams } = params;
   return request<any>(`/api/v1/data/${param0}/createItem`, {
     method: 'PUT',
     headers: {
@@ -82,7 +82,7 @@ export async function deleteItem(
   params: API.deleteItemParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, id: param1, ...queryParams } = params;
+  const { subject: param0, id: param1, ...queryParams } = params;
   return request<any>(`/api/v1/data/${param0}/item/${param1}/deleteItem${undefined}`, {
     method: 'DELETE',
     params: { ...queryParams },
@@ -104,7 +104,7 @@ export async function getPageDefinition(
   params: API.getPageDefinitionParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, ...queryParams } = params;
+  const { subject: param0, ...queryParams } = params;
   return request<API.PageDefinition>(`/api/v1/definition/${param0}/getPageDefinition`, {
     method: 'GET',
     params: { ...queryParams },
@@ -118,7 +118,7 @@ export async function getTablePageDefinition(
   params: API.getTablePageDefinitionParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, ...queryParams } = params;
+  const { subject: param0, ...queryParams } = params;
   return request<API.TablePageDefinition>(`/api/v1/definition/${param0}/getTablePageDefinition`, {
     method: 'GET',
     params: { ...queryParams },
@@ -132,7 +132,7 @@ export async function getEditFormPageDefinition(
   params: API.getEditFormPageDefinitionParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, ...queryParams } = params;
+  const { subject: param0, ...queryParams } = params;
   return request<API.EditFormPageDefinition>(`/api/v1/definition/${param0}/getEditFormDefinition`, {
     method: 'GET',
     params: { ...queryParams },

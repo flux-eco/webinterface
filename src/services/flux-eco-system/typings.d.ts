@@ -32,7 +32,9 @@ declare namespace API {
     table?: any[];
   };
 
-  type Item = {};
+  type Item = {
+    sequence?: number;
+  };
 
   type itemList = {
     data?: any[];
@@ -80,11 +82,25 @@ declare namespace API {
   };
 
   type getItemListParams = {
-    projectionName: string;
+    subject: string;
   };
 
   type getItemParams = {
-    projectionName: string;
+    subject: string;
+    id: number;
+  };
+
+  type updateParams = {
+    subject: string;
+    id: number;
+  };
+
+  type createParams = {
+    subject: string;
+  };
+
+  type deleteItemParams = {
+    subject: string;
     id: number;
   };
 }
