@@ -1,4 +1,9 @@
 declare namespace API {
+  type FormCreate = {
+    rootObjectAggregateName?: string;
+    fields?: any[];
+  };
+
   type PageList = {
     data?: Page[];
     /** total Pages */
@@ -20,13 +25,13 @@ declare namespace API {
   type PageDefinition = {
     title?: string;
     avatar?: string;
-    formCreate?: any[];
+    formCreate?: FormCreate;
     formEdit?: any[];
   };
 
   type TablePageDefinition = {
     title?: string;
-    formCreate?: any[];
+    formCreate?: FormCreate;
     formEdit?: any[];
     tableFilter?: any[];
     table?: any[];
@@ -34,10 +39,12 @@ declare namespace API {
 
   type Item = {
     sequence?: number;
+    rootObjectAggregateId?: string;
+    rootObjectAggregateName?: string;
   };
 
   type itemList = {
-    data?: any[];
+    data?: Item[];
     /** total Modules */
     total?: number;
     success?: boolean;
@@ -56,20 +63,6 @@ declare namespace API {
     url?: string;
     offset?: number;
     limit?: number;
-  };
-
-  type Modules = {
-    data?: Module[];
-    /** total Modules */
-    total?: number;
-    success?: boolean;
-  };
-
-  type Module = {
-    title?: string;
-    description?: string;
-    link?: string;
-    imageUrl?: string;
   };
 
   type ErrorResponse = {
@@ -102,5 +95,17 @@ declare namespace API {
   type deleteItemParams = {
     subject: string;
     id: number;
+  };
+
+  type getPageDefinitionParams = {
+    subject: string;
+  };
+
+  type getTablePageDefinitionParams = {
+    subject: string;
+  };
+
+  type getEditFormPageDefinitionParams = {
+    subject: string;
   };
 }

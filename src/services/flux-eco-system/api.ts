@@ -57,43 +57,34 @@ export async function update(
   });
 }
 
-/** add PUT /api/v1/data/${param0}/createItem */
+/** add PUT /api/v1/change/${param0}/createItem */
 export async function create(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.createParams,
   body: API.Item,
   options?: { [key: string]: any },
 ) {
-  const { subject: param0, ...queryParams } = params;
-  return request<any>(`/api/v1/data/${param0}/createItem`, {
+  const subjectName =  params.subject;
+  return request<any>(`/api/v1/change/${subjectName}/createItem`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    params: { ...queryParams },
     data: body,
     ...(options || {}),
   });
 }
 
-/** remove DELETE /api/v1/data/${param0}/item/${param1}/deleteItem${undefined} */
+/** remove DELETE /api/v1/change/${param0}/item/${param1}/deleteItem */
 export async function deleteItem(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteItemParams,
   options?: { [key: string]: any },
 ) {
   const { subject: param0, id: param1, ...queryParams } = params;
-  return request<any>(`/api/v1/data/${param0}/item/${param1}/deleteItem${undefined}`, {
+  return request<any>(`/api/v1/change/${param0}/item/${param1}/deleteItem`, {
     method: 'DELETE',
     params: { ...queryParams },
-    ...(options || {}),
-  });
-}
-
-/** list of Modules GET /api/v1/modulelist */
-export async function getModuleList(options?: { [key: string]: any }) {
-  return request<API.Modules>('/api/v1/modulelist', {
-    method: 'GET',
     ...(options || {}),
   });
 }
