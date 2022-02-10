@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
-import {getPages} from '@/services/flux-eco-system/api';
+import {getPageList} from '@/services/flux-eco-system/api';
 import {history} from '@/.umi/core/history';
 import {List } from 'antd';
 import classNames from 'classnames';
@@ -18,7 +18,7 @@ const Pages: React.FC = () => {
 
   const fetchPages = async () => {
     try {
-      const pageList = await getPages()
+      const pageList = await getPageList()
       if (pageList.data) {
         setPages(pageList.data);
       }

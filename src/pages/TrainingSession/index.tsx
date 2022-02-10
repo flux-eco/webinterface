@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import { create, deleteItem, getItem, getTablePageDefinition, update } from '@/services/flux-eco-system/api';
+import { create, deleteItem, getItem, getTable, update } from '@/services/flux-eco-system/api';
 import { history } from '@/.umi/core/history';
 import { Avatar, Button, List, message, Modal } from 'antd';
 import { CheckOutlined, CloseOutlined, DeleteOutlined, LeftOutlined, SaveOutlined } from '@ant-design/icons';
@@ -42,7 +42,7 @@ const Modules: React.FC = () => {
   const [hasChange, setHasChange] = useState<boolean>(false);
 
   const getEditForm = async (): Promise<API.TablePageDefinition[]> => {
-    const {table}: any = await getTablePageDefinition({projectionName: tsProjection});
+    const {table}: any = await getTable({projectionName: tsProjection});
 
     return table.data;
   }

@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
-import {create, getItemList, getTablePageDefinition} from '@/services/flux-eco-system/api';
+import {create, getItemList, getTable} from '@/services/flux-eco-system/api';
 import {history} from '@/.umi/core/history';
 import {Avatar, Button, Input, List, message, Space, Tag} from 'antd';
 import {PlusOutlined, RightOutlined} from '@ant-design/icons';
@@ -42,7 +42,7 @@ const EditData: React.FC = () => {
       }
 
 
-      const tablePageDefinition = await getTablePageDefinition({
+      const tablePageDefinition = await getTable({
         projectionName: projectionName
       }) as API.TablePageDefinition
       const formCreate = tablePageDefinition.formCreate;

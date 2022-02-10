@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react';
 import {BetaSchemaForm, ModalForm} from '@ant-design/pro-form';
 import {Button, message} from 'antd';
 import ProList from '@ant-design/pro-list';
-import {create, deleteItem, getItemList, getPageDefinition, update} from "@/services/flux-eco-system/api";
+import {create, deleteItem, getItem, getItemList, getPage, update} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
 import {isString} from "lodash";
 
@@ -17,6 +17,8 @@ export default () => {
 
 
   const [modalCreateFormVisibility, setModalCreateFormVisibility] = useState<boolean>(false);
+
+  const [currentEditItemId, setCurrentEditItemId] = useState<string>('');
   const [modalEditFormVisibility, setModalEditFormVisibility] = useState<boolean>(false);
   const [createForm, setCreateForm] = useState<API.FormCreate>({});
 
@@ -25,13 +27,21 @@ export default () => {
     onChange: (keys: ReactText[]) => setSelectedRowKeys(keys),
   };
 
+
+  const fetchItem = async(projectionName: string, projectionId: string) => {
+    const item = await getItem(
+      {projectionName: projectionName, projectionId: projectionId}
+    )
+    return item;
+  }
+
   const fetchData = async () => {
     try {
-      const list = await getItemList({subject: params.subject})
+      const list = await getItemList({projectionName: params.projectionName})
       if (list.total && list.data) {
         setCurrentData(list.data);
       }
-      const pageDefinition = await getPageDefinition({subject: params.subject}) as API.TablePageDefinition
+      const pageDefinition = await getPage({projectionName: params.projectionName}) as API.TablePageDefinition
       setPageTitle(pageDefinition.title);
 
       const formCreate = pageDefinition.formCreate;
@@ -48,16 +58,15 @@ export default () => {
 
 
   const handleAdd = async (
-    fields: API.Item) => {
+    properties: API.Item) => {
     //todo translate by api
     const hide = message.loading('loading');
     try {
-      console.log(fields)
+      console.log(properties)
 
-      const rootObjectAggregateName = createForm.rootObjectAggregateName;
-      const createParameter = {subject: rootObjectAggregateName};
-      if(createParameter.subject) {
-        await create(createParameter, fields);
+      const createParameter = {projectionName: params.projectionName};
+      if(createParameter.projectionName) {
+        await create(createParameter, properties);
       }
       hide();
       //todo translate by api
@@ -72,12 +81,15 @@ export default () => {
   };
 
   const handleUpdate = async (
-    fields: API.Item
+    properties: API.Item
   ) => {
     const hide = message.loading('Configuring');
     try {
+
+      const updateParameter = {projectionName: params.projectionName, projectionId: currentEditItemId};
+
       await update(
-        params, fields
+        updateParameter, properties
       );
       hide();
 
@@ -91,13 +103,13 @@ export default () => {
   };
 
 
-  const handleRemove = async (subject: string, id: number) => {
+  const handleRemove = async (projectionName: string, projectionId: string) => {
     const hide = message.loading('Loading');
 
     try {
       await deleteItem({
-        subject: subject,
-        id: id
+        projectionName: projectionName,
+        projectionId: projectionId
       });
 
       hide();
@@ -140,16 +152,16 @@ export default () => {
           */
           actions: {
             render: (text, row) => {
-              if (isString(row.rootObjectAggregateId) && isString(row.rootObjectAggregateName)) {
+              if (isString(row.projectionId)) {
                 //todo from api and translation
                 return [
                   <a key="edit" onClick={async () => {
+                    setCurrentEditItemId(row.projectionId);
                     setModalEditFormVisibility(true);
-                    history.pushState({id: row.rootObjectAggregateId}, '', null);
                   }}>Edit</a>,
 
                   <a key="delete" onClick={async () => {
-                    await handleRemove(row.rootObjectAggregateName, row.rootObjectAggregateId);
+                    await handleRemove(params.projectionName, row.projectionId);
                   }}>Delete</a>
                 ];
               }
@@ -198,7 +210,7 @@ export default () => {
               }*/
             }
           }}
-          columns={createForm.fields} // Martin create Data Form definition
+          columns={createForm.properties} // Martin create Data Form definition
         />
       </ModalForm>
 
@@ -223,6 +235,11 @@ export default () => {
       >
         <BetaSchemaForm // <DataItem[]> // ???
           layoutType={'Form'}
+          request={async () => {
+              const res = await fetchItem(params.projectionName, currentEditItemId)
+              return res;
+            }
+          }
           onFinish={async (values) => {
             const success = await handleUpdate(values as API.Item);
             if (success) {
@@ -232,7 +249,7 @@ export default () => {
               }*/
             }
           }}
-          columns={createForm.fields}
+          columns={createForm.properties}
         />
       </ModalForm>
 

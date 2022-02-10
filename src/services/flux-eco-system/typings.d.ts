@@ -1,7 +1,7 @@
 declare namespace API {
   type FormCreate = {
     rootObjectAggregateName?: string;
-    fields?: any[];
+    properties?: any[];
   };
 
   type PageList = {
@@ -38,9 +38,7 @@ declare namespace API {
   };
 
   type Item = {
-    sequence?: number;
-    rootObjectAggregateId?: string;
-    rootObjectAggregateName?: string;
+    projectionId?: string;
   };
 
   type itemList = {
@@ -75,37 +73,37 @@ declare namespace API {
   };
 
   type getItemListParams = {
-    subject: string;
+    projectionName: string;
   };
 
   type getItemParams = {
-    subject: string;
-    id: number;
+    projectionName: string;
+    projectionId: string;
   };
 
   type updateParams = {
-    subject: string;
-    id: number;
+    projectionName: string;
+    projectionId: string;
   };
 
   type createParams = {
-    subject: string;
+    projectionName: string;
   };
 
   type deleteItemParams = {
-    subject: string;
-    id: number;
+    projectionName: string;
+    projectionId: string;
   };
 
-  type getPageDefinitionParams = {
-    subject: string;
+  type getPageParams = {
+    projectionName: string;
   };
 
-  type getTablePageDefinitionParams = {
-    subject: string;
+  type getTableParams = {
+    projectionName: string;
   };
 
   type getEditFormPageDefinitionParams = {
-    subject: string;
+    projectionName: string;
   };
 }
