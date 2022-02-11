@@ -1,14 +1,15 @@
-import type {ReactText} from 'react';
+import {ReactText, useRef} from 'react';
 import {useEffect, useState} from 'react';
 import {BetaSchemaForm, ModalForm} from '@ant-design/pro-form';
 import {Button, message} from 'antd';
-import ProList from '@ant-design/pro-list';
 import {create, deleteItem, getItem, getItemList, getPage, update} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
 import {isString} from "lodash";
+import ProTable, { ActionType, ProColumns, RequestData, TableDropdown } from '@ant-design/pro-table';
 
 export default () => {
-  const params: any = useParams()
+  const params: any = useParams();
+  const tableRef = useRef<ActionType>();
   const [pageTitle, setPageTitle] = useState<string | undefined>('');
   //const [avatar, setAvatar] = useState<string>('');
   const [currentData, setCurrentData] = useState<any[]>([]);
@@ -21,6 +22,7 @@ export default () => {
   const [currentEditItemId, setCurrentEditItemId] = useState<string>('');
   const [modalEditFormVisibility, setModalEditFormVisibility] = useState<boolean>(false);
   const [createForm, setCreateForm] = useState<API.FormCreate>({});
+  const [columns, setColumns] = useState<ProColumns<API.Item>[]>([]);
 
   const rowSelection = {
     selectedRowKeys,
@@ -45,17 +47,40 @@ export default () => {
       setPageTitle(pageDefinition.title);
 
       const formCreate = pageDefinition.formCreate;
+
       if (formCreate) {
         setCreateForm(formCreate);
       }
+
+      setColumns(formCreate?.properties?.map((prop) => {
+        return {
+          title: prop.title,
+          dataIndex: prop.dataIndex
+        } as ProColumns
+      }).concat([{
+        title: 'Actions',
+        dataIndex: 'actions',
+        width: 'm',
+        key: 'option',
+        valueType: 'option',
+
+        render: (text, record, _, action) => [
+          <a key="edit" onClick={() => {
+            setCurrentEditItemId(record.projectionId)
+            setModalEditFormVisibility(true);
+          }}>edit</a>,
+          <a key="delete" onClick={() => handleRemove(params.projectionName, record.projectionId)}>delete</a>,
+        ]
+      }]) as ProColumns[]);
+      tableRef?.current?.reload();
     } catch (err) {
       console.error('Fetch Data failed ', err)
     }
   };
+
   useEffect(() => {
     fetchData();
   }, [location]);
-
 
   const handleAdd = async (
     properties: API.Item) => {
@@ -71,11 +96,13 @@ export default () => {
       hide();
       //todo translate by api
       message.success('Added successfully');
+      fetchData();
       return true;
     } catch (error) {
       hide();
       //todo translate by api
       message.error('Adding failed, please try again!');
+      fetchData();
       return false;
     }
   };
@@ -94,6 +121,7 @@ export default () => {
       hide();
 
       message.success('Configuration is successful');
+      fetchData();
       return true;
     } catch (error) {
       hide();
@@ -107,6 +135,7 @@ export default () => {
     const hide = message.loading('Loading');
 
     try {
+      console.log(projectionName, projectionId)
       await deleteItem({
         projectionName: projectionName,
         projectionId: projectionId
@@ -114,6 +143,7 @@ export default () => {
 
       hide();
       message.success('Deleted successfully and will refresh soon');
+      fetchData();
       return true;
     } catch (error) {
       hide();
@@ -124,63 +154,25 @@ export default () => {
 
   return (
     <>
-      <ProList<API.Item>
-        toolBarRender={() => {
-          return [
-            //todo from api & translation
-            <Button key="3" type="primary" onClick={async () => {
-              setModalCreateFormVisibility(true);
-            }}>
-              Add
-            </Button>,
-          ];
+      <ProTable<API.Item>
+        columns={columns}
+        actionRef={tableRef}
+        request={(param, sorter, filter) => {
+          return Promise.resolve({
+            data: currentData,
+            success: true,
+          });
         }}
-        metas={{
-          title: {},
-          description: {
-            render: () => {
-              return 'some Description';
-            },
-          },
+        rowKey="key"
+        toolBarRender={() => [
+          <Button key="show" type='primary' onClick={() => setModalCreateFormVisibility(true)}>Add</Button>,
+        ]}
+        >
 
-          /* todo metadataArray as two column layout
-          content: {
-            render: () => (
 
-            ),
-          },
-          */
-          actions: {
-            render: (text, row) => {
-              if (isString(row.projectionId)) {
-                //todo from api and translation
-                return [
-                  <a key="edit" onClick={async () => {
-                    setCurrentEditItemId(row.projectionId);
-                    setModalEditFormVisibility(true);
-                  }}>Edit</a>,
-
-                  <a key="delete" onClick={async () => {
-                    await handleRemove(params.projectionName, row.projectionId);
-                  }}>Delete</a>
-                ];
-              }
-              return [];
-            }
-          },
-        }}
-        expandable={{
-          expandedRowKeys,
-          defaultExpandAllRows: false,
-          onExpandedRowsChange: setExpandedRowKeys,
-        }}
-        rowKey="sequence"
-        headerTitle={pageTitle}
-        rowSelection={rowSelection}
-        dataSource={currentData}
-      />
+      </ProTable>
       <ModalForm
-        //Creation Form as Modal
+        // Creation Form as Modal
         title="New Entry"
         width="400px"
         visible={modalCreateFormVisibility}
@@ -192,29 +184,22 @@ export default () => {
           );
           if (success) {
             setModalCreateFormVisibility(false);
-            /*if (actionRef.current) {
-              actionRef.current.reload();
-            }*/
           }
         }}
       >
         <BetaSchemaForm // <DataItem[]> // ???
           layoutType={'Form'}
           onFinish={async (values) => {
-            console.log(values);
             const success = await handleAdd(values as API.Item);
             if (success) {
               setModalCreateFormVisibility(false);
-              /*if (actionRef.current) {
-                actionRef.current.reload();
-              }*/
             }
           }}
-          columns={createForm.properties} // Martin create Data Form definition
+          columns={createForm.properties as any} // Martin create Data Form definition
         />
       </ModalForm>
 
-      <ModalForm
+      <ModalForm<API.Item>
         //Edit Form as Modal
         title="Edit Entry"
         width="400px"
@@ -227,13 +212,10 @@ export default () => {
           );
           if (success) {
             setModalEditFormVisibility(false);
-            /*if (actionRef.current) {
-              actionRef.current.reload();
-            }*/
           }
         }}
       >
-        <BetaSchemaForm // <DataItem[]> // ???
+        <BetaSchemaForm<API.Item>
           layoutType={'Form'}
           request={async () => {
               const res = await fetchItem(params.projectionName, currentEditItemId)
@@ -244,12 +226,9 @@ export default () => {
             const success = await handleUpdate(values as API.Item);
             if (success) {
               setModalEditFormVisibility(false);
-              /*if (actionRef.current) {
-                actionRef.current.reload();
-              }*/
             }
           }}
-          columns={createForm.properties}
+          columns={createForm.properties as any}
         />
       </ModalForm>
 
