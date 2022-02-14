@@ -1,7 +1,7 @@
 import {ReactText, useRef} from 'react';
 import {useEffect, useState} from 'react';
 import {BetaSchemaForm, ModalForm} from '@ant-design/pro-form';
-import {Button, message} from 'antd';
+import {Button, Divider, message, PageHeader} from 'antd';
 import {create, deleteItem, getItem, getItemList, getPage, update} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
 import {isString} from "lodash";
@@ -44,9 +44,10 @@ export default () => {
         setCurrentData(list.data);
       }
       const pageDefinition = await getPage({projectionName: params.projectionName}) as API.TablePageDefinition
-      setPageTitle(pageDefinition.title);
-
       const formCreate = pageDefinition.formCreate;
+
+
+      setPageTitle(pageDefinition.title);
 
       if (formCreate) {
         setCreateForm(formCreate);
@@ -60,7 +61,7 @@ export default () => {
       }).concat([{
         title: 'Actions',
         dataIndex: 'actions',
-        width: 'm',
+        width: '12em',
         key: 'option',
         valueType: 'option',
 
@@ -135,7 +136,6 @@ export default () => {
     const hide = message.loading('Loading');
 
     try {
-      console.log(projectionName, projectionId)
       await deleteItem({
         projectionName: projectionName,
         projectionId: projectionId
@@ -154,6 +154,17 @@ export default () => {
 
   return (
     <>
+      <PageHeader 
+        onBack={() => history.back()}
+        title={pageTitle}
+        extra={[
+          <Button key="3">Edit</Button>,
+          <Button key="1" type="primary" color='warn'>
+            Delete
+          </Button>,
+        ]}
+      />
+      <Divider />
       <ProTable<API.Item>
         columns={columns}
         actionRef={tableRef}
@@ -195,7 +206,7 @@ export default () => {
               setModalCreateFormVisibility(false);
             }
           }}
-          columns={createForm.properties as any} // Martin create Data Form definition
+          columns={createForm.properties ? createForm.properties : []} // Martin create Data Form definition
         />
       </ModalForm>
 

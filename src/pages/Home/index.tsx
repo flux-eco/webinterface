@@ -2,15 +2,12 @@ import React, {useEffect, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import {getPageList} from '@/services/flux-eco-system/api';
 import {history} from '@/.umi/core/history';
-import {List } from 'antd';
+import {Button, List } from 'antd';
 import classNames from 'classnames';
 import styles from './style.less'
 import { Card, Typography } from 'antd';
 const { Meta } = Card;
 const {Paragraph} = Typography;
-
-
-
 
 const Pages: React.FC = () => {
   const location = history.location.pathname;
@@ -35,35 +32,23 @@ const Pages: React.FC = () => {
 
   return (
     <PageContainer className={classNames(styles.container)}>
-      test
+      <Button type='primary' className={classNames(styles.addButton)}>Add</Button>
       <List
         dataSource={pages}
         className={classNames(styles.list)}
         renderItem={(page: API.Page) =>
           (
-
             <List.Item className={classNames(styles.listItem)}>
 
               <Card
                 hoverable
-                className={styles.card}
-                actions={[<a key="option1" href={page.url}>öffnen</a>]}
+                className={classNames(styles.card)}
+                cover={<img alt="example" src={page.avatar} />}
+                onClick={() => history.push(page.url as string)}
               >
-                <Card.Meta
-                  avatar={<img alt="" className={styles.cardAvatar} src={page.avatar} />}
-                  title={<a>{page.title}</a>}
-                  description={
-                    <Paragraph className={styles.item} ellipsis={{ rows: 3 }}>
-                     xyz
-                    </Paragraph>
-                  }
-                />
+                <Meta title={page.title} />
               </Card>
-
-
             </List.Item>
-
-
           )
         }>
       </List>
