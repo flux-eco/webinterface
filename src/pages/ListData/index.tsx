@@ -1,10 +1,10 @@
 import {ReactText, useRef} from 'react';
 import {useEffect, useState} from 'react';
 import {BetaSchemaForm, ModalForm} from '@ant-design/pro-form';
-import {Button, Divider, message, PageHeader} from 'antd';
+import {Button, Divider, message, PageHeader, Modal} from 'antd';
 import {create, deleteItem, getItem, getItemList, getPage, update} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
-import {isString} from "lodash";
+import {flatMap, isString} from "lodash";
 import ProTable, { ActionType, ProColumns, RequestData, TableDropdown } from '@ant-design/pro-table';
 
 export default () => {
@@ -16,19 +16,16 @@ export default () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<ReactText[]>([]);
   const [expandedRowKeys, setExpandedRowKeys] = useState<readonly ReactText[]>([]);
 
+  // table options
 
+  // Modal Controlls
   const [modalCreateFormVisibility, setModalCreateFormVisibility] = useState<boolean>(false);
-
   const [currentEditItemId, setCurrentEditItemId] = useState<string>('');
   const [modalEditFormVisibility, setModalEditFormVisibility] = useState<boolean>(false);
+  const [modalDeleteFormVisibility, setModalDeleteFormVisibility] = useState<boolean>(false);
+
   const [createForm, setCreateForm] = useState<API.FormCreate>({});
   const [columns, setColumns] = useState<ProColumns<API.Item>[]>([]);
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (keys: ReactText[]) => setSelectedRowKeys(keys),
-  };
-
 
   const fetchItem = async(projectionName: string, projectionId: string) => {
     const item = await getItem(
@@ -64,13 +61,15 @@ export default () => {
         width: '12em',
         key: 'option',
         valueType: 'option',
-
         render: (text, record, _, action) => [
           <a key="edit" onClick={() => {
             setCurrentEditItemId(record.projectionId)
             setModalEditFormVisibility(true);
           }}>edit</a>,
-          <a key="delete" onClick={() => handleRemove(params.projectionName, record.projectionId)}>delete</a>,
+          <a key="delete" onClick={() => {
+            setCurrentEditItemId(record.projectionId);
+            setModalDeleteFormVisibility(true);
+          }}>delete</a>,
         ]
       }]) as ProColumns[]);
       tableRef?.current?.reload();
@@ -79,17 +78,15 @@ export default () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [location]);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [location]);
 
   const handleAdd = async (
     properties: API.Item) => {
     //todo translate by api
     const hide = message.loading('loading');
     try {
-      console.log(properties)
-
       const createParameter = {projectionName: params.projectionName};
       if(createParameter.projectionName) {
         await create(createParameter, properties);
@@ -159,7 +156,7 @@ export default () => {
         title={pageTitle}
         extra={[
           <Button key="3">Edit</Button>,
-          <Button key="1" type="primary" color='warn'>
+          <Button key="1" type="primary" danger>
             Delete
           </Button>,
         ]}
@@ -168,19 +165,20 @@ export default () => {
       <ProTable<API.Item>
         columns={columns}
         actionRef={tableRef}
-        request={(param, sorter, filter) => {
-          return Promise.resolve({
+        request={async (param, sorter, filter) => {
+          await fetchData();
+          return {
             data: currentData,
             success: true,
-          });
+            total: currentData.length
+          };
         }}
         rowKey="key"
         toolBarRender={() => [
-          <Button key="show" type='primary' onClick={() => setModalCreateFormVisibility(true)}>Add</Button>,
-        ]}
-        >
-
-
+          <Button key="show" type='primary' onClick={() => setModalCreateFormVisibility(true)}>
+            Add
+          </Button>,
+        ]}>
       </ProTable>
       <ModalForm
         // Creation Form as Modal
@@ -206,7 +204,7 @@ export default () => {
               setModalCreateFormVisibility(false);
             }
           }}
-          columns={createForm.properties ? createForm.properties : []} // Martin create Data Form definition
+          columns={createForm.properties ? createForm.properties : []}
         />
       </ModalForm>
 
@@ -243,6 +241,36 @@ export default () => {
         />
       </ModalForm>
 
+      <Modal
+        //Edit Form as Modal
+        title="Delete"
+        width="400px"
+        visible={modalDeleteFormVisibility}
+        // onVisibleChange={setModalDeleteFormVisibility}
+        footer={[
+          <Button key="cancel" onClick={() => setModalDeleteFormVisibility(false)}>Cancel</Button>,
+          <Button key="delete" type='primary' danger onClick={async () => {
+            const success = await handleRemove(
+              params.projectionName,
+              currentEditItemId
+            );
+            if (success) {
+              setModalDeleteFormVisibility(false);
+            }
+          }}>Delete</Button>
+        ]}
+        // onFinish={async (values) => {
+        //   const success = await handleRemove(
+        //     params.projectionName,
+        //     currentEditItemId
+        //   );
+        //   if (success) {
+        //     setModalEditFormVisibility(false);
+        //   }
+        // }}
+      >
+        <h1>Are you sure?</h1>
+      </Modal>
     </>
   );
 };

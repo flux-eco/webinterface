@@ -1,6 +1,7 @@
 declare namespace API {
   type FormCreate = {
     rootObjectAggregateName?: string;
+    options?: { dragable?: boolean; showDragHandler?: any };
     properties?: any[];
   };
 
