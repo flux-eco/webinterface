@@ -7,20 +7,6 @@
     component: './ListData',
   },
   {
-    name: 'EditData',
-    icon: 'book',
-    path: '/editdata/:projectionName',
-    layout: false,
-    component: './EditData',
-  },
-  {
-    name: 'EditItem',
-    icon: 'book',
-    path: '/edititem/:projectionName/:sequence/',
-    layout: false,
-    component: './EditItem',
-  },
-  {
     name: 'Home',
     icon: 'book',
     path: '/home',
