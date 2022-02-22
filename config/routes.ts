@@ -2,7 +2,14 @@
   {
     name: 'ListData',
     icon: 'book',
-    path: '/listdata/:projectionName',
+    path: '/listdata/:page',
+    layout: false,
+    component: './ListData',
+  },
+  {
+    name: 'ListData',
+    icon: 'book',
+    path: '/listdata/:page/:topicalAreaId',
     layout: false,
     component: './ListData',
   },
