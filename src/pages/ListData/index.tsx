@@ -6,6 +6,7 @@ import {create, deleteItem, getItem, getItemList, getPage, update} from "@/servi
 import {useParams} from 'react-router';
 import {flatMap, isString} from "lodash";
 import ProTable, { ActionType, ProColumns, RequestData, TableDropdown } from '@ant-design/pro-table';
+import {history} from '@/.umi/core/history';
 
 export default () => {
   const params: any = useParams();
@@ -36,11 +37,11 @@ export default () => {
 
   const fetchData = async () => {
     try {
-      const list = await getItemList({projectionName: params.projectionName})
+      const list = await getItemList({projectionName: params.page})
       if (list.total && list.data) {
         setCurrentData(list.data);
       }
-      const pageDefinition = await getPage({projectionName: params.projectionName}) as API.TablePageDefinition
+      const pageDefinition = await getPage({projectionName: params.page}) as API.TablePageDefinition
       const formCreate = pageDefinition.formCreate;
 
 
@@ -87,7 +88,7 @@ export default () => {
     //todo translate by api
     const hide = message.loading('loading');
     try {
-      const createParameter = {projectionName: params.projectionName};
+      const createParameter = {projectionName: params.page};
       if(createParameter.projectionName) {
         await create(createParameter, properties);
       }
@@ -111,7 +112,7 @@ export default () => {
     const hide = message.loading('Configuring');
     try {
 
-      const updateParameter = {projectionName: params.projectionName, projectionId: currentEditItemId};
+      const updateParameter = {projectionName: params.page, projectionId: currentEditItemId};
 
       await update(
         updateParameter, properties
@@ -127,7 +128,6 @@ export default () => {
       return false;
     }
   };
-
 
   const handleRemove = async (projectionName: string, projectionId: string) => {
     const hide = message.loading('Loading');
@@ -152,7 +152,7 @@ export default () => {
   return (
     <>
       <PageHeader 
-        onBack={() => history.back()}
+        onBack={() => history.goBack()}
         title={pageTitle}
         extra={[
           <Button key="3">Edit</Button>,
@@ -171,6 +171,15 @@ export default () => {
             data: currentData,
             success: true,
             total: currentData.length
+          };
+        }}
+        onRow={(record, index) => {
+          return {
+            onClick: event => {history.push(`/listdata/${params.page}/${record.projectionId}`)}, // click row
+            onDoubleClick: event => {}, // double click row
+            onContextMenu: event => {}, // right button click row
+            onMouseEnter: event => {}, // mouse enter row
+            onMouseLeave: event => {}, // mouse leave row
           };
         }}
         rowKey="key"
@@ -227,7 +236,7 @@ export default () => {
         <BetaSchemaForm<API.Item>
           layoutType={'Form'}
           request={async () => {
-              const res = await fetchItem(params.projectionName, currentEditItemId)
+              const res = await fetchItem(params.page, currentEditItemId)
               return res;
             }
           }
@@ -251,7 +260,7 @@ export default () => {
           <Button key="cancel" onClick={() => setModalDeleteFormVisibility(false)}>Cancel</Button>,
           <Button key="delete" type='primary' danger onClick={async () => {
             const success = await handleRemove(
-              params.projectionName,
+              params.page,
               currentEditItemId
             );
             if (success) {
@@ -261,7 +270,7 @@ export default () => {
         ]}
         // onFinish={async (values) => {
         //   const success = await handleRemove(
-        //     params.projectionName,
+        //     params.page,
         //     currentEditItemId
         //   );
         //   if (success) {

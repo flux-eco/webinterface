@@ -1,3 +1,4 @@
+import { join } from 'path';
 // https://umijs.org/config/
 import { defineConfig } from 'umi';
 
@@ -12,4 +13,19 @@ export default defineConfig({
     babelPlugins: [],
     babelOptions: {},
   },
+  openAPI: [
+    {
+      requestLibPath: "import { request } from 'umi'",
+      schemaPath: 'http://localhost:8010/openapi.json',
+      projectName: 'flux-eco-system',
+      mock: false,
+    },
+    {
+      requestLibPath: "import { request } from 'umi'",
+      // 或者使用在线的版本
+      // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
+      schemaPath: join(__dirname, 'oneapi.json'),
+      mock: false,
+    }
+  ],
 });
