@@ -27,13 +27,13 @@ declare namespace API {
     title?: string;
     avatar?: string;
     formCreate?: FormCreate;
-    formEdit?: any[];
+    formEdit?: any;
   };
 
   type TablePageDefinition = {
     title?: string;
     formCreate?: FormCreate;
-    formEdit?: any[];
+    formEdit?: any;
     tableFilter?: any[];
     table?: any[];
   };
