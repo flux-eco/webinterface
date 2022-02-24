@@ -1,11 +1,10 @@
-import {ReactText, useRef} from 'react';
-import {useEffect, useState} from 'react';
-import {BetaSchemaForm, ModalForm} from '@ant-design/pro-form';
+import {useRef} from 'react';
+import {useState} from 'react';
+import {BetaSchemaForm} from '@ant-design/pro-form';
 import {Button, Divider, message, PageHeader, Modal} from 'antd';
 import {create, deleteItem, getItem, getItemList, getPage, update} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
-import {flatMap, isString} from "lodash";
-import ProTable, { ActionType, ProColumns, RequestData, TableDropdown } from '@ant-design/pro-table';
+import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table';
 import {history} from '@/.umi/core/history';
 import Tooltip from 'antd/es/tooltip';
 import { ArrowRightOutlined } from '@ant-design/icons';
@@ -16,20 +15,18 @@ export default () => {
 
   const [lastFetch, setLastFetch] = useState<number>(0);
   const [pageTitle, setPageTitle] = useState<string | undefined>('');
-  //const [avatar, setAvatar] = useState<string>('');
   const [currentData, setCurrentData] = useState<any[]>([]);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<ReactText[]>([]);
-  const [expandedRowKeys, setExpandedRowKeys] = useState<readonly ReactText[]>([]);
-
-  // table options
 
   // Modal Controlls
   const [modalCreateFormVisibility, setModalCreateFormVisibility] = useState<boolean>(false);
   const [currentEditItem, setCurrentEditItem] = useState<any>({});
   const [modalEditFormVisibility, setModalEditFormVisibility] = useState<boolean>(false);
   const [modalDeleteFormVisibility, setModalDeleteFormVisibility] = useState<boolean>(false);
+  const [currentProjectionAction, setCurrentProjectionAction] = useState<string>(params.page);
 
+  // code gen objects
   const [createForm, setCreateForm] = useState<API.FormCreate>({});
+  const [editForm, setEditForm] = useState<any>({})
   const [columns, setColumns] = useState<ProColumns<API.Item>[]>([]);
 
   const fetchItem = async(projectionName: string, projectionId: string) => {
@@ -57,6 +54,13 @@ export default () => {
         setCreateForm(formCreate);
       }
 
+      if (pageDefinition.formEdit !== undefined) {
+        setEditForm(pageDefinition.formEdit);
+      }
+
+      console.log(pageDefinition)
+      console.log(editForm)
+
       setColumns(formCreate?.properties?.map((prop) => {
         return {
           title: prop.title,
@@ -70,12 +74,12 @@ export default () => {
         valueType: 'option',
         render: (text, record, _, action) => [
           <a key="edit" onClick={() => {
-            setCurrentEditItem(record)
-            setModalEditFormVisibility(true);
+            setCurrentEditItem(record);
+            openModal('edit', params.page);
           }}>edit</a>,
           <a key="delete" onClick={() => {
             setCurrentEditItem(record);
-            setModalDeleteFormVisibility(true);
+            openModal('delete', params.page);
           }}>delete</a>,
         ]
       }, {
@@ -103,12 +107,13 @@ export default () => {
   // }, [location]);
 
   const handleAdd = async (
+    projectionName: string,
     properties: API.Item) => {
     //todo translate by api
     const hide = message.loading('loading');
     try {
       console.log('add ', params.page)
-      const createParameter = {projectionName: params.page};
+      const createParameter = {projectionName: projectionName};
 
       if (params.page == 'TrainingSession') {
         properties.topicalAreaId = params.topicalAreaId;
@@ -133,12 +138,14 @@ export default () => {
   };
 
   const handleUpdate = async (
+    projectionName: string,
+    projectionId: string,
     properties: API.Item
   ) => {
     const hide = message.loading('Configuring');
     try {
 
-      const updateParameter = {projectionName: params.page, projectionId: currentEditItem};
+      const updateParameter = {projectionName, projectionId};
 
       await update(
         updateParameter, properties
@@ -175,14 +182,36 @@ export default () => {
     }
   };
 
+  const openModal = (type: 'edit' | 'create' | 'delete', projection: string) => {
+    setCurrentProjectionAction(projection);
+
+    switch (type) {
+      case 'edit':
+        setModalEditFormVisibility(true);
+        break;
+      case 'create':
+        setModalCreateFormVisibility(true);
+        break;
+      case 'delete':
+        setModalDeleteFormVisibility(true);
+        break;
+    }
+  }
+
+  const closeModal = () => {
+    setModalEditFormVisibility(false);
+    setModalCreateFormVisibility(false);
+    setModalDeleteFormVisibility(false);
+  }
+
   return (
     <>
       <PageHeader 
         onBack={() => history.goBack()}
         title={pageTitle}
         extra={[
-          <Button key="3">Edit</Button>,
-          <Button key="1" type="primary" danger>
+          <Button key="3" onClick={() => openModal('edit', 'TopicalArea')}>Edit</Button>,
+          <Button key="1" type="primary" danger onClick={() => openModal('delete', 'TopicalArea')}>
             Delete
           </Button>,
         ]}
@@ -213,7 +242,7 @@ export default () => {
         }}
         rowKey="key"
         toolBarRender={() => [
-          <Button key="show" type='primary' onClick={() => setModalCreateFormVisibility(true)}>
+          <Button key="show" type='primary' onClick={() => openModal('create', params.page)}>
             Add
           </Button>,
         ]}>
@@ -224,16 +253,16 @@ export default () => {
         title="New Entry"
         width="400px"
         visible={modalCreateFormVisibility}
-        onCancel={() => setModalCreateFormVisibility(false)}
+        onCancel={() => closeModal()}
         destroyOnClose={true}
         footer={false}
       >
         <BetaSchemaForm // <DataItem[]> // ???
           layoutType={'Form'}
           onFinish={async (values) => {
-            const success = await handleAdd(values as API.Item);
+            const success = await handleAdd(currentProjectionAction, values as API.Item);
             if (success) {
-              setModalCreateFormVisibility(false);
+              closeModal();
             }
           }}
           columns={createForm.properties ? createForm.properties : []}
@@ -245,7 +274,7 @@ export default () => {
         title="Edit Entry"
         width="400px"
         visible={modalEditFormVisibility}
-        onCancel={() => setModalEditFormVisibility(false)}
+        onCancel={() => closeModal()}
         destroyOnClose={true}
         footer={false}
       >
@@ -258,9 +287,9 @@ export default () => {
           initialValues={currentEditItem}
           syncToInitialValues={true}
           onFinish={async (values) => {
-            const success = await handleUpdate(values as API.Item);
+            const success = await handleUpdate(currentProjectionAction, currentEditItem, values as API.Item);
             if (success) {
-              setModalEditFormVisibility(false);
+              closeModal();
             }
           }}
           columns={createForm.properties as any}
@@ -272,17 +301,17 @@ export default () => {
         title="Delete"
         width="400px"
         visible={modalDeleteFormVisibility}
+        onCancel={() => closeModal()}
         destroyOnClose={true}
-        // onVisibleChange={setModalDeleteFormVisibility}
         footer={[
-          <Button key="cancel" onClick={() => setModalDeleteFormVisibility(false)}>Cancel</Button>,
+          <Button key="cancel" onClick={() => closeModal()}>Cancel</Button>,
           <Button key="delete" type='primary' danger onClick={async () => {
             const success = await handleRemove(
-              params.page,
+              currentProjectionAction,
               currentEditItem
             );
             if (success) {
-              setModalDeleteFormVisibility(false);
+              closeModal();
             }
           }}>Delete</Button>
         ]}
