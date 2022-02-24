@@ -87,7 +87,7 @@ const Pages: React.FC = () => {
                 hoverable
                 className={classNames(styles.card)}
                 cover={<img alt="example" src={page.image} />}
-                onClick={() => history.push(`listdata/TopicalArea/${page.projectionId}` as string)}
+                onClick={() => history.push(`listdata/TrainingSession/${page.projectionId}` as string)}
               >
                 <Meta title={page.title} />
               </Card>

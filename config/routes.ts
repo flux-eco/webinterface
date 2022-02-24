@@ -14,6 +14,13 @@
     component: './ListData',
   },
   {
+    name: 'ListData',
+    icon: 'book',
+    path: '/listdata/:page/:topicalAreaId/:trainingSessionId',
+    layout: false,
+    component: './ListData',
+  },
+  {
     name: 'Home',
     icon: 'book',
     path: '/home',
