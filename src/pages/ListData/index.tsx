@@ -41,14 +41,31 @@ export default () => {
       setLastFetch(Date.now());
       const list = await getItemList({projectionName: params.page})
       if (list.total && list.data) {
-        setCurrentData(list.data);
+        if (params.topicalAreaId && params.page == 'TrainingSession') {
+          setCurrentData(list.data.filter((val: any, i, arr) => val.topicalAreaId === params.topicalAreaId));
+        } else {
+          setCurrentData(list.data);
+        }
       }
       const pageDefinition = await getPage({projectionName: params.page}) as API.TablePageDefinition
-      const parentItem = await getItem({projectionName: 'TopicalArea', projectionId: params.topicalAreaId});
+
+      if (params.page === 'TopicalArea') {
+        setPageTitle('TopicalAreas');
+      } else if (params.page === 'TrainingSession') {
+        const parentItem: any = await getItem({projectionName: 'TopicalArea', projectionId: params.topicalAreaId});
+        setPageTitle(parentItem.title);
+      } else if (params.page === 'TrainingUnit') {
+        const parentItem: any = await getItem({projectionName: 'TrainingSession', projectionId: params.trainingSessionId});
+        console.log(parentItem);
+        setPageTitle(parentItem.title);
+      } else {
+        setPageTitle('Unknown')
+        console.error("Unknown page");
+      }
+
 
       const formCreate = pageDefinition.formCreate;
 
-      setPageTitle(parentItem.title);
 
       if (formCreate) {
         setCreateForm(formCreate);
@@ -90,7 +107,13 @@ export default () => {
         valueType: 'option',
         render: (text, record, _, action) => [
           <Tooltip title="enter">
-            <Button type="primary" shape="circle" icon={<ArrowRightOutlined />} onClick={() => history.push(`/listdata/${params.page}/${params.topicalAreaId}/${record.projectionId}`)}/>
+            <Button type="primary" shape="circle" icon={<ArrowRightOutlined />} onClick={() => {
+                if (params.page === 'TopicalArea') {
+                  history.push(`/listdata/TrainingSession/${record.projectionId}`);
+                } else {
+                  history.push(`/listdata/TrainingUnit/${params.topicalAreaId}/${record.projectionId}`);
+                }
+              }}/>
           </Tooltip>
         ]
       }]) as ProColumns[]);
@@ -108,7 +131,7 @@ export default () => {
 
   const handleAdd = async (
     projectionName: string,
-    properties: API.Item) => {
+    properties: any) => {
     //todo translate by api
     const hide = message.loading('loading');
     try {
@@ -118,6 +141,8 @@ export default () => {
       if (params.page == 'TrainingSession') {
         properties.topicalAreaId = params.topicalAreaId;
         console.log(properties)
+      } else if (params.page === 'TrainingUnit') {
+        properties.trainingSessionId = params.trainingSessionId;
       }
 
       if(createParameter.projectionName) {
@@ -146,6 +171,8 @@ export default () => {
     try {
 
       const updateParameter = {projectionName, projectionId};
+
+      properties.image = null;
 
       await update(
         updateParameter, properties
@@ -206,16 +233,16 @@ export default () => {
 
   return (
     <>
-      <PageHeader 
-        onBack={() => history.goBack()}
-        title={pageTitle}
-        extra={[
-          <Button key="3" onClick={() => openModal('edit', 'TopicalArea')}>Edit</Button>,
-          <Button key="1" type="primary" danger onClick={() => openModal('delete', 'TopicalArea')}>
-            Delete
-          </Button>,
-        ]}
-      />
+      {
+        params.page !== 'TopicalArea' ?
+        <PageHeader 
+          onBack={() => history.goBack()}
+          title={pageTitle}
+        /> :
+        <PageHeader 
+          title={pageTitle}
+        />
+      }
       <Divider />
       <ProTable<API.Item>
         columns={columns}
@@ -287,7 +314,7 @@ export default () => {
           initialValues={currentEditItem}
           syncToInitialValues={true}
           onFinish={async (values) => {
-            const success = await handleUpdate(currentProjectionAction, currentEditItem, values as API.Item);
+            const success = await handleUpdate(currentProjectionAction, currentEditItem.projectionId, values as API.Item);
             if (success) {
               closeModal();
             }
@@ -308,7 +335,7 @@ export default () => {
           <Button key="delete" type='primary' danger onClick={async () => {
             const success = await handleRemove(
               currentProjectionAction,
-              currentEditItem
+              currentEditItem.projectionId
             );
             if (success) {
               closeModal();
