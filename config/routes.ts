@@ -29,7 +29,7 @@
   },
   {
     path: '/',
-    redirect: '/home',
+    redirect: '/listdata/TopicalArea',
   },
   {
     component: './404',
