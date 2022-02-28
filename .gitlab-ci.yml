@@ -1,0 +1,11 @@
+build:
+  stage: build
+  before_script:
+    - echo -n $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker build . --pull --build-arg GITLAB_API_KEY --target website -t $CI_REGISTRY_IMAGE/webinterface:latest
+    - docker push $CI_REGISTRY_IMAGE/webinterface:latest
+  after_script:
+    - docker logout $CI_REGISTRY
+  only:
+    - main
