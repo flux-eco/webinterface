@@ -43,6 +43,8 @@ export default () => {
       if (list.total && list.data) {
         if (params.topicalAreaId && params.page == 'TrainingSession') {
           setCurrentData(list.data.filter((val: any, i, arr) => val.topicalAreaId === params.topicalAreaId));
+        } else if (params.trainingSessionId && params.page === 'TrainingUnit') {
+          setCurrentData(list.data.filter((val: any, i, arr) => val.trainingSessionId === params.trainingSessionId));
         } else {
           setCurrentData(list.data);
         }
@@ -56,7 +58,6 @@ export default () => {
         setPageTitle(parentItem.title);
       } else if (params.page === 'TrainingUnit') {
         const parentItem: any = await getItem({projectionName: 'TrainingSession', projectionId: params.trainingSessionId});
-        console.log(parentItem);
         setPageTitle(parentItem.title);
       } else {
         setPageTitle('Unknown')
@@ -74,9 +75,6 @@ export default () => {
       if (pageDefinition.formEdit !== undefined) {
         setEditForm(pageDefinition.formEdit);
       }
-
-      console.log(pageDefinition)
-      console.log(editForm)
 
       setColumns(formCreate?.properties?.map((prop) => {
         return {
@@ -99,7 +97,7 @@ export default () => {
             openModal('delete', params.page);
           }}>delete</a>,
         ]
-      }, {
+      }, params.page !== 'TrainingUnit' ? {
         title: 'Enter',
         dataIndex: 'enter',
         width: '6em',
@@ -116,7 +114,7 @@ export default () => {
               }}/>
           </Tooltip>
         ]
-      }]) as ProColumns[]);
+      } : {}]) as ProColumns[]);
 
       tableRef?.current?.reload();
 
@@ -135,12 +133,10 @@ export default () => {
     //todo translate by api
     const hide = message.loading('loading');
     try {
-      console.log('add ', params.page)
       const createParameter = {projectionName: projectionName};
 
       if (params.page == 'TrainingSession') {
         properties.topicalAreaId = params.topicalAreaId;
-        console.log(properties)
       } else if (params.page === 'TrainingUnit') {
         properties.trainingSessionId = params.trainingSessionId;
       }
@@ -248,7 +244,7 @@ export default () => {
         columns={columns}
         actionRef={tableRef}
         request={async (param, sorter, filter) => {
-          if (lastFetch + 1000 < Date.now() || !currentData.length) { // spam protection
+          if (lastFetch + 1000 < Date.now()) { // spam protection
             await fetchData();
           }
 
