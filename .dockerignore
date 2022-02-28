@@ -1,0 +1,5 @@
+# Generated and downloaded stuff
+node_modules
+src/.umi
+src/.umi-production
+dist
