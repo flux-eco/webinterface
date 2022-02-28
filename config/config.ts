@@ -6,7 +6,7 @@ import defaultSettings from './defaultSettings';
 import proxy from './proxy';
 import routes from './routes';
 
-const { REACT_APP_ENV } = process.env;
+const { REACT_APP_ENV, SERVER_SCHEMA_PATH } = process.env;
 
 export default defineConfig({
   hash: true,
@@ -54,7 +54,7 @@ export default defineConfig({
   openAPI: [
     {
       requestLibPath: "import { request } from 'umi'",
-      schemaPath: 'http://localhost:8010/openapi.json',
+      schemaPath: SERVER_SCHEMA_PATH ?? 'http://localhost:8010/openapi.json',
       projectName: 'flux-eco-system',
       mock: false,
     },
