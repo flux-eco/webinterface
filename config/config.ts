@@ -6,7 +6,7 @@ import defaultSettings from './defaultSettings';
 import proxy from './proxy';
 import routes from './routes';
 
-const { REACT_APP_ENV } = process.env;
+const { REACT_APP_ENV, SERVER_SCHEMA_PATH } = process.env;
 
 export default defineConfig({
   hash: true,
@@ -23,7 +23,7 @@ export default defineConfig({
   // https://umijs.org/zh-CN/plugins/plugin-locale
   locale: {
     // default zh-CN
-    default: 'zh-CN',
+    default: 'en-US',
     antd: true,
     // default true, when it is true, will use `navigator.language` overwrite default
     baseNavigator: true,
@@ -54,7 +54,7 @@ export default defineConfig({
   openAPI: [
     {
       requestLibPath: "import { request } from 'umi'",
-      schemaPath: 'http://127.0.0.1:8010/api/openapi.json',
+      schemaPath: SERVER_SCHEMA_PATH ?? 'http://localhost:8010/openapi.json',
       projectName: 'flux-eco-system',
       mock: false,
     },
@@ -64,12 +64,7 @@ export default defineConfig({
       // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
       schemaPath: join(__dirname, 'oneapi.json'),
       mock: false,
-    },
-    {
-      requestLibPath: "import { request } from 'umi'",
-      schemaPath: 'https://gw.alipayobjects.com/os/antfincdn/CA1dOm%2631B/openapi.json',
-      projectName: 'swagger',
-    },
+    }
   ],
   nodeModulesTransform: { type: 'none' },
   mfsu: {},

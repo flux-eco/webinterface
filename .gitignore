@@ -17,10 +17,9 @@ yarn-error.log
 
 /coverage
 .idea
-yarn.lock
-package-lock.json
 *bak
 .vscode
+.env
 
 # visual studio code
 .history
@@ -40,4 +39,4 @@ screenshot
 build
 
 # generated
-/src/services
+# /src/services

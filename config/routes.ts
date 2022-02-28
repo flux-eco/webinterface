@@ -1,23 +1,38 @@
 ﻿export default [
   {
-    name: 'modules',
+    name: 'ListData',
     icon: 'book',
-    path: '/modules',
+    path: '/listdata/:page',
     layout: false,
-    component: './Modules',
+    component: './ListData',
   },
   {
-    name: 'list.table-list-demo',
-    icon: 'table',
-    path: '/table/:id',
+    name: 'ListData',
+    icon: 'book',
+    path: '/listdata/:page/:topicalAreaId',
     layout: false,
-    component: './TableListDemo',
+    component: './ListData',
+  },
+  {
+    name: 'ListData',
+    icon: 'book',
+    path: '/listdata/:page/:topicalAreaId/:trainingSessionId',
+    layout: false,
+    component: './ListData',
+  },
+  {
+    name: 'Home',
+    icon: 'book',
+    path: '/home',
+    layout: false,
+    component: './Home',
   },
   {
     path: '/',
-    redirect: '/table',
+    redirect: '/listdata/TopicalArea',
   },
   {
     component: './404',
+    layout: false
   },
 ];

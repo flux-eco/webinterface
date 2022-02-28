@@ -1,0 +1,31 @@
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.add-button {
+  float: right;
+}
+
+.ant-list-items {
+  display: flex;
+}
+
+.list {
+  display: flex;
+}
+
+.listItem {
+  position: relative;
+  width: 240px;
+}
+
+.card {
+  width: 100%;
+}
+
+.cardAvatar {
+  width: 100%;
+  padding-left: 16px;
+}
