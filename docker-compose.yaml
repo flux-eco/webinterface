@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      target: website
+      context: .
+    image: webinterface:latest
+    ports:
+      - "9200:80"
+  ecosystem:
+    depends_on:
+      - flux-event-storage
+      - flux-globalstream-storage
+      - flux-projection-storage
+    image: git.fluxlabs.ch:5000/flux-capacitor/ecosystem/ecosystem:latest
+    environment:
+      PROJECTION_MYSQL_USER: user
+      PROJECTION_MYSQL_PASSWORD: password
+      EVENTS_MYSQL_USER: user
+      EVENTS_MYSQL_PASSWORD: password
+      STREAM_MYSQL_USER: user
+      STREAM_MYSQL_PASSWORD: password
+  flux-event-storage:
+    image: mariadb:10.8-focal
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: events
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+  flux-globalstream-storage:
+    image: mariadb:10.8-focal
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: stream
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+  flux-projection-storage:
+    image: mariadb:10.8-focal
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: projection
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+
