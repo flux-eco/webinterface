@@ -21,4 +21,5 @@ ENV NGINX_API_DOWNSTREAM="ecosystem"
 
 COPY --from=build "$APP_ROOT_PATH/dist" "/usr/share/nginx/html/"
 COPY "default.conf.template" "/etc/nginx/templates/"
+COPY --chown="www-data:www-data" ".htpasswd" "/etc/nginx/"
 
