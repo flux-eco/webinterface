@@ -9,6 +9,8 @@ import {history} from '@/.umi/core/history';
 import Tooltip from 'antd/es/tooltip';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { setLocale } from 'umi';
+import classNames from 'classnames';
+import styles from './style.less'
 
 setLocale('en-US') // TODO: dirty, find a better place
 
@@ -68,6 +70,7 @@ export default () => {
         }
       }
       const pageDefinition = await getPage({projectionName: params.page}) as API.TablePageDefinition
+      const formCreate = pageDefinition.formCreate;
 
       if (params.page === 'TopicalArea') {
         setPageTitle('TopicalAreas');
@@ -81,8 +84,6 @@ export default () => {
         setPageTitle('Unknown')
         console.error("Unknown page");
       }
-
-      const formCreate = pageDefinition.formCreate;
 
       const setUnitTypeForms = async () => {
         setUnitTypeForm({
@@ -140,10 +141,20 @@ export default () => {
       }
 
       setColumns(formCreate?.properties?.map((prop) => {
-        return {
-          title: prop.title,
-          dataIndex: prop.dataIndex
-        } as ProColumns
+        if (prop.valueType === 'color') {
+          return {
+            title: prop.title,
+            dataIndex: prop.dataIndex,
+            render: (text, record, _, action) => [
+              <div className={classNames(styles.color)} style={{backgroundColor: record.color}}></div>
+            ]
+          } as ProColumns
+        } else {
+          return {
+            title: prop.title,
+            dataIndex: prop.dataIndex,
+          } as ProColumns
+        }
       }).concat([{
         title: 'Actions',
         dataIndex: 'actions',
@@ -152,6 +163,7 @@ export default () => {
         valueType: 'option',
         render: (text, record, _, action) => [
           <a key="edit" onClick={() => {
+            console.log('record', record)
             setCurrentEditItem(record);
             openModal('edit', params.page);
           }}>edit</a>,
