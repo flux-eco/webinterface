@@ -171,6 +171,7 @@ export default () => {
                 } else {
                   history.push(`/listdata/TrainingUnit/${params.topicalAreaId}/${record.projectionId}`);
                 }
+                window.location.reload();
               }}/>
           </Tooltip>
         ]
@@ -182,10 +183,6 @@ export default () => {
       console.error('Fetch Data failed ', err)
     }
   };
-
-  // useEffect(() => {
-  //   fetchData();
-  // }, [location]);
 
   const handleAdd = async (
     projectionName: string,
