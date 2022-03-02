@@ -24,6 +24,21 @@ export default () => {
   const [modalDeleteFormVisibility, setModalDeleteFormVisibility] = useState<boolean>(false);
   const [currentProjectionAction, setCurrentProjectionAction] = useState<string>(params.page);
 
+  // Form Controlls
+  const [unitTypeForm, setUnitTypeForm] = useState<{
+    warmUp: any,
+    playTime: any,
+    coachCorner: any,
+    practiceDrill: any,
+    proTip: any
+  }>({
+    warmUp: {},
+    playTime: {},
+    coachCorner: {},
+    practiceDrill: {},
+    proTip: {}
+  });
+
   // code gen objects
   const [createForm, setCreateForm] = useState<API.FormCreate>({});
   const [editForm, setEditForm] = useState<any>({})
@@ -64,9 +79,54 @@ export default () => {
         console.error("Unknown page");
       }
 
-
       const formCreate = pageDefinition.formCreate;
 
+      const setUnitTypeForms = async () => {
+        setUnitTypeForm({
+          warmUp: (await getPage({projectionName: 'WarmUp'})).formCreate,
+          playTime: (await getPage({projectionName: 'PlayTime'})).formCreate,
+          practiceDrill: (await getPage({projectionName: 'PracticeDrill'})).formCreate,
+          coachCorner: (await getPage({projectionName: 'CoachCorner'})).formCreate,
+          proTip: (await getPage({projectionName: 'ProTip'})).formCreate
+        })
+      }
+
+      if (params.page === 'TrainingUnit') {
+        setUnitTypeForms()
+      }
+
+      if (formCreate?.rootObjectAggregateName === 'TrainingUnit') {
+        formCreate.properties?.push({
+          titleKey: 'dependency',
+          key: 'depenedency',
+          dataIndex: 'dependency',
+          valueType: 'dependency',
+          fieldProps: {
+            name: ['type']
+          },
+          columns: ({ type }) => {
+            if (!unitTypeForm.warmUp.properties) {
+              setUnitTypeForms()
+            }
+            switch (type) {
+              case 'warmUp':
+                return unitTypeForm.warmUp.properties;
+              case 'playTime':
+                return unitTypeForm.playTime.properties;
+              case 'coachCorner':
+                return unitTypeForm.coachCorner.properties;
+              case 'practiceDrill':
+                return unitTypeForm.practiceDrill.properties;
+              case 'proTip':
+                return unitTypeForm.proTip.properties;
+              default:
+                return []
+            }
+          }
+        })
+      }
+
+      console.log(formCreate)
 
       if (formCreate) {
         setCreateForm(formCreate);
@@ -132,10 +192,24 @@ export default () => {
     try {
       const createParameter = {projectionName: projectionName};
 
-      if (params.page == 'TrainingSession') {
+      if (params.page === 'TrainingSession') {
         properties.topicalAreaId = params.topicalAreaId;
       } else if (params.page === 'TrainingUnit') {
+        console.log('adding TrainingUnit')
         properties.trainingSessionId = params.trainingSessionId;
+        
+        const unitBaseProps = ['type', 'subtitle', 'talents', 'trainingSessionId'];
+        console.log('baseProps', properties);
+        properties.data = Object.fromEntries(Object.entries(properties)
+          .filter(([key, val]) => {
+            console.log('filter', key, val);
+            return !unitBaseProps.includes(key);
+          }).map(prop => {
+            delete properties[prop[0]];
+            return prop
+          }))
+        console.log('randomShit')
+        console.log('data', properties)
       }
 
       if(createParameter.projectionName) {
@@ -158,7 +232,7 @@ export default () => {
   const handleUpdate = async (
     projectionName: string,
     projectionId: string,
-    properties: API.Item
+    properties: any
   ) => {
     const hide = message.loading('Configuring');
     try {
