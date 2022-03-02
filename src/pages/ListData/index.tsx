@@ -8,7 +8,6 @@ import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table';
 import {history} from '@/.umi/core/history';
 import Tooltip from 'antd/es/tooltip';
 import { ArrowRightOutlined } from '@ant-design/icons';
-import { raw } from 'express';
 
 export default () => {
   const params: any = useParams();
@@ -169,7 +168,6 @@ export default () => {
             <Button type="primary" shape="circle" icon={<ArrowRightOutlined />} onClick={() => {
                 if (params.page === 'TopicalArea') {
                   history.push(`/listdata/TrainingSession/${record.projectionId}`);
-                  
                 } else {
                   history.push(`/listdata/TrainingUnit/${params.topicalAreaId}/${record.projectionId}`);
                 }
