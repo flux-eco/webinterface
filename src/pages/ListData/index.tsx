@@ -8,6 +8,9 @@ import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table';
 import {history} from '@/.umi/core/history';
 import Tooltip from 'antd/es/tooltip';
 import { ArrowRightOutlined } from '@ant-design/icons';
+import { setLocale } from 'umi';
+
+setLocale('en-US') // TODO: dirty, find a better place
 
 export default () => {
   const params: any = useParams();
