@@ -64,9 +64,7 @@ export default () => {
 
       let pItem: any = {title: 'TopicalAreas'};
       if (params.page === 'TrainingSession') {
-        console.log('fetch parent: before', pItem)
         pItem = await getItem({projectionName: 'TopicalArea', projectionId: params.topicalAreaId});
-        console.log('fetch parent: after', pItem)
       } else if (params.page === 'TrainingUnit') {
         pItem = await getItem({projectionName: 'TrainingSession', projectionId: params.trainingSessionId});
       } else {
@@ -137,7 +135,6 @@ export default () => {
         valueType: 'option',
         render: (text, record, _, action) => [
           <a key="edit" onClick={() => {
-            console.log('record', record)
             setCurrentEditItem(record);
             openModal('edit', params.page);
           }}>edit</a>,
@@ -178,8 +175,6 @@ export default () => {
   }, [])
 
   useEffect(() => {
-    console.log('updated unitTypeForm ', unitTypeForm);
-
     if (createForm?.rootObjectAggregateName === 'TrainingUnit') {
       const form = createForm;
       form.properties?.push({
@@ -191,7 +186,6 @@ export default () => {
           name: ['type']
         },
         columns: ({ type }) => {
-          console.log('needing ', unitTypeForm.warmUp?.properties, unitTypeForm);
           switch (type) {
             case 'warmUp':
               return unitTypeForm.warmUp.properties;
@@ -221,24 +215,17 @@ export default () => {
     try {
       const createParameter = {projectionName: projectionName};
 
-      if (params.page === 'TrainingSession') {
-        properties.parentId = parentItem.projectionId;
-      } else if (params.page === 'TrainingUnit') {
-        console.log('adding TrainingUnit')
-        properties.parentId = parentItem.projectionId;
-        
+      properties.parentId = parentItem.projectionId;
+      
+      if (params.page === 'TrainingUnit') {  
         const unitBaseProps = ['type', 'subtitle', 'talents', 'parentId'];
-        console.log('baseProps', properties);
         properties.data = Object.fromEntries(Object.entries(properties)
           .filter(([key, val]) => {
-            console.log('filter', key, val);
             return !unitBaseProps.includes(key);
           }).map(prop => {
             delete properties[prop[0]];
             return prop
           }))
-        console.log('randomShit')
-        console.log('data', properties)
       }
 
       if(createParameter.projectionName) {
