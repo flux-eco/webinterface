@@ -9,9 +9,13 @@ export async function getItemList(
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
+  console.log('query', queryParams);
+
   return request<API.itemList>(`/api/v1/query/${param0}/getItemList`, {
     method: 'GET',
-    params: { ...queryParams },
+    params: {
+      ...queryParams,
+    },
     ...(options || {}),
   });
 }
