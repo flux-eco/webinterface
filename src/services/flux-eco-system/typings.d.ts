@@ -27,13 +27,13 @@ declare namespace API {
     title?: string;
     avatar?: string;
     formCreate?: FormCreate;
-    formEdit?: any;
+    formEdit?: any[];
   };
 
   type TablePageDefinition = {
     title?: string;
     formCreate?: FormCreate;
-    formEdit?: any;
+    formEdit?: any[];
     tableFilter?: any[];
     table?: any[];
   };
@@ -75,6 +75,8 @@ declare namespace API {
 
   type getItemListParams = {
     projectionName: string;
+    /** Query items by its parent */
+    parentId?: string;
   };
 
   type getItemParams = {

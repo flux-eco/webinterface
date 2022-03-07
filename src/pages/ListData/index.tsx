@@ -1,8 +1,8 @@
-import {useRef} from 'react';
+import {useEffect, useRef} from 'react';
 import {useState} from 'react';
 import {BetaSchemaForm} from '@ant-design/pro-form';
 import {Button, Divider, message, PageHeader, Modal} from 'antd';
-import {create, deleteItem, getItem, getItemList, getPage, update} from "@/services/flux-eco-system/api";
+import {create, deleteItem, getItem, getItemList, getPage, getPageList, update} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
 import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table';
 import {history} from '@/.umi/core/history';
@@ -18,8 +18,7 @@ export default () => {
   const params: any = useParams();
   const tableRef = useRef<ActionType>();
 
-  const [lastFetch, setLastFetch] = useState<number>(0);
-  const [pageTitle, setPageTitle] = useState<string | undefined>('');
+  const [parentItem, setParentItem] = useState<any>({});
   const [currentData, setCurrentData] = useState<any[]>([]);
 
   // Modal Controlls
@@ -29,6 +28,9 @@ export default () => {
   const [modalDeleteFormVisibility, setModalDeleteFormVisibility] = useState<boolean>(false);
   const [currentProjectionAction, setCurrentProjectionAction] = useState<string>(params.page);
 
+  // Anti Spam Timers
+  const [lastFetchData, setLastFetchData] = useState<number>(0);
+  
   // Form Controlls
   const [unitTypeForm, setUnitTypeForm] = useState<{
     warmUp: any,
@@ -58,79 +60,49 @@ export default () => {
 
   const fetchData = async () => {
     try {
-      setLastFetch(Date.now());
-      const list = await getItemList({projectionName: params.page})
-      if (list.total && list.data) {
-        if (params.topicalAreaId && params.page == 'TrainingSession') {
-          setCurrentData(list.data.filter((val: any, i, arr) => val.topicalAreaId === params.topicalAreaId));
-        } else if (params.trainingSessionId && params.page === 'TrainingUnit') {
-          setCurrentData(list.data.filter((val: any, i, arr) => val.trainingSessionId === params.trainingSessionId));
+      setLastFetchData(Date.now());
+
+      let pItem: any = {title: 'TopicalAreas'};
+      if (params.page === 'TrainingSession') {
+        console.log('fetch parent: before', pItem)
+        pItem = await getItem({projectionName: 'TopicalArea', projectionId: params.topicalAreaId});
+        console.log('fetch parent: after', pItem)
+      } else if (params.page === 'TrainingUnit') {
+        pItem = await getItem({projectionName: 'TrainingSession', projectionId: params.trainingSessionId});
+      } else {
+        console.error("Unknown page");
+      }
+
+
+      const list: any = await getItemList({projectionName: params.page, parentId: pItem.projectionId})
+      if (list.status === 'success') {
+        if (params.parentId && params.page !== 'TopicalArea') {
+          setCurrentData(list.data);
         } else {
           setCurrentData(list.data);
         }
       }
+
       const pageDefinition = await getPage({projectionName: params.page}) as API.TablePageDefinition
       const formCreate = pageDefinition.formCreate;
 
-      if (params.page === 'TopicalArea') {
-        setPageTitle('TopicalAreas');
-      } else if (params.page === 'TrainingSession') {
-        const parentItem: any = await getItem({projectionName: 'TopicalArea', projectionId: params.topicalAreaId});
-        setPageTitle(parentItem.title);
-      } else if (params.page === 'TrainingUnit') {
-        const parentItem: any = await getItem({projectionName: 'TrainingSession', projectionId: params.trainingSessionId});
-        setPageTitle(parentItem.title);
-      } else {
-        setPageTitle('Unknown')
-        console.error("Unknown page");
-      }
-
-      const setUnitTypeForms = async () => {
-        setUnitTypeForm({
+      const setUnitTypeForms = async (): Promise<any> => {
+        const uTypeForm = {
           warmUp: (await getPage({projectionName: 'WarmUp'})).formCreate,
           playTime: (await getPage({projectionName: 'PlayTime'})).formCreate,
           practiceDrill: (await getPage({projectionName: 'PracticeDrill'})).formCreate,
           coachCorner: (await getPage({projectionName: 'CoachCorner'})).formCreate,
           proTip: (await getPage({projectionName: 'ProTip'})).formCreate
-        })
+        }
+
+        setUnitTypeForm(uTypeForm);
+
+        return uTypeForm;
       }
 
       if (params.page === 'TrainingUnit') {
         setUnitTypeForms()
       }
-
-      if (formCreate?.rootObjectAggregateName === 'TrainingUnit') {
-        formCreate.properties?.push({
-          titleKey: 'dependency',
-          key: 'depenedency',
-          dataIndex: 'dependency',
-          valueType: 'dependency',
-          fieldProps: {
-            name: ['type']
-          },
-          columns: ({ type }) => {
-            if (!unitTypeForm.warmUp.properties) {
-              setUnitTypeForms()
-            }
-            switch (type) {
-              case 'warmUp':
-                return unitTypeForm.warmUp.properties;
-              case 'playTime':
-                return unitTypeForm.playTime.properties;
-              case 'coachCorner':
-                return unitTypeForm.coachCorner.properties;
-              case 'practiceDrill':
-                return unitTypeForm.practiceDrill.properties;
-              case 'proTip':
-                return unitTypeForm.proTip.properties;
-              default:
-                return []
-            }
-          }
-        })
-      }
-
-      console.log(formCreate)
 
       if (formCreate) {
         setCreateForm(formCreate);
@@ -139,6 +111,8 @@ export default () => {
       if (pageDefinition.formEdit !== undefined) {
         setEditForm(pageDefinition.formEdit);
       }
+
+      setParentItem(pItem);
 
       setColumns(formCreate?.properties?.map((prop) => {
         if (prop.valueType === 'color') {
@@ -199,6 +173,46 @@ export default () => {
     }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, [])
+
+  useEffect(() => {
+    console.log('updated unitTypeForm ', unitTypeForm);
+
+    if (createForm?.rootObjectAggregateName === 'TrainingUnit') {
+      const form = createForm;
+      form.properties?.push({
+        titleKey: 'dependency',
+        key: 'depenedency',
+        dataIndex: 'dependency',
+        valueType: 'dependency',
+        fieldProps: {
+          name: ['type']
+        },
+        columns: ({ type }) => {
+          console.log('needing ', unitTypeForm.warmUp?.properties, unitTypeForm);
+          switch (type) {
+            case 'warmUp':
+              return unitTypeForm.warmUp.properties;
+            case 'playTime':
+              return unitTypeForm.playTime.properties;
+            case 'coachCorner':
+              return unitTypeForm.coachCorner.properties;
+            case 'practiceDrill':
+              return unitTypeForm.practiceDrill.properties;
+            case 'proTip':
+              return unitTypeForm.proTip.properties;
+            default:
+              return []
+          }
+        }
+      })
+
+      setCreateForm(form);
+    }
+  }, [unitTypeForm])
+
   const handleAdd = async (
     projectionName: string,
     properties: any) => {
@@ -208,12 +222,12 @@ export default () => {
       const createParameter = {projectionName: projectionName};
 
       if (params.page === 'TrainingSession') {
-        properties.topicalAreaId = params.topicalAreaId;
+        properties.parentId = parentItem.projectionId;
       } else if (params.page === 'TrainingUnit') {
         console.log('adding TrainingUnit')
-        properties.trainingSessionId = params.trainingSessionId;
+        properties.parentId = parentItem.projectionId;
         
-        const unitBaseProps = ['type', 'subtitle', 'talents', 'trainingSessionId'];
+        const unitBaseProps = ['type', 'subtitle', 'talents', 'parentId'];
         console.log('baseProps', properties);
         properties.data = Object.fromEntries(Object.entries(properties)
           .filter(([key, val]) => {
@@ -319,10 +333,10 @@ export default () => {
         params.page !== 'TopicalArea' ?
         <PageHeader 
           onBack={() => history.goBack()}
-          title={pageTitle}
+          title={parentItem.title}
         /> :
         <PageHeader 
-          title={pageTitle}
+          title={parentItem.title}
         />
       }
       <Divider />
@@ -330,7 +344,7 @@ export default () => {
         columns={columns}
         actionRef={tableRef}
         request={async (param, sorter, filter) => {
-          if (lastFetch + 1000 < Date.now()) { // spam protection
+          if (lastFetchData + 1000 < Date.now()) { // spam protection
             await fetchData();
           }
 
