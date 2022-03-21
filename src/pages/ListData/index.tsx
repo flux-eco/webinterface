@@ -11,6 +11,7 @@ import { ArrowRightOutlined } from '@ant-design/icons';
 import { setLocale } from 'umi';
 import classNames from 'classnames';
 import styles from './style.less'
+import { TopicalArea } from '@/components/TopicalArea';
 
 setLocale('en-US') // TODO: dirty, find a better place
 
@@ -45,6 +46,10 @@ export default () => {
     practiceDrill: {},
     proTip: {}
   });
+  const [topicalAreaPreview, setTopicalAreaPreview] = useState<{
+    title?: string,
+    color?: string
+  }>({})
 
   // code gen objects
   const [createForm, setCreateForm] = useState<API.FormCreate>({});
@@ -213,7 +218,7 @@ export default () => {
     //todo translate by api
     const hide = message.loading('loading');
     try {
-      const createParameter = {projectionName: projectionName};
+      const createParameter = {projectionName};
 
       properties.parentId = parentItem.projectionId;
       
@@ -228,7 +233,7 @@ export default () => {
           }))
       }
 
-      if(createParameter.projectionName) {
+      if (createParameter.projectionName) {
         await create(createParameter, properties);
       }
       hide();
@@ -361,22 +366,38 @@ export default () => {
       <Modal
         // Creation Form as Modal
         title="New Entry"
-        width="400px"
         visible={modalCreateFormVisibility}
         onCancel={() => closeModal()}
         destroyOnClose={true}
         footer={false}
+        bodyStyle={{
+          display: 'flex',
+          justifyContent: 'space-evenly',
+          alignItems: 'center',
+          gap: '1em'
+        }}
+        width='60vw'
       >
-        <BetaSchemaForm // <DataItem[]> // ???
+        <BetaSchemaForm
           layoutType={'Form'}
+          onFieldsChange={(changedField, allFields) => {
+            console.log(changedField, allFields);
+            if (changedField[0].name[0] == 'title') {
+              setTopicalAreaPreview({title: changedField[0].value, color: topicalAreaPreview.color});
+            } else if (changedField[0].name[0] == 'color') {
+              setTopicalAreaPreview({title: topicalAreaPreview.title, color: changedField[0].value});
+            }
+          }}
           onFinish={async (values) => {
             const success = await handleAdd(currentProjectionAction, values as API.Item);
             if (success) {
               closeModal();
             }
           }}
-          columns={createForm.properties ? createForm.properties : []}
-        />
+          columns={createForm.properties ? createForm.properties : []}/>
+          
+          <Divider type='vertical' style={{height: '100%'}}></Divider>
+          <TopicalArea title={topicalAreaPreview.title} color={topicalAreaPreview.color}></TopicalArea>
       </Modal>
 
       <Modal
