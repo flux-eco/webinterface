@@ -9,7 +9,7 @@
   {
     name: 'ListData',
     icon: 'book',
-    path: '/listdata/:page/:topicalAreaId',
+    path: '/listdata/:page/:parentId',
     layout: false,
     component: './ListData',
   },

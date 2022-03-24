@@ -28,6 +28,7 @@ declare namespace API {
     avatar?: string;
     formCreate?: FormCreate;
     formEdit?: any[];
+    itemActions?: any[];
   };
 
   type TablePageDefinition = {
@@ -36,6 +37,7 @@ declare namespace API {
     formEdit?: any[];
     tableFilter?: any[];
     table?: any[];
+    itemActions?: any[];
   };
 
   type Item = {

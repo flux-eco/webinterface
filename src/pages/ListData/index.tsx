@@ -19,7 +19,8 @@ export default () => {
   const params: any = useParams();
   const tableRef = useRef<ActionType>();
 
-  const [parentItem, setParentItem] = useState<any>({});
+  const [currentPage, setCurrentPage] = useState<{}>({});
+  const [pageHeader, setPageHeader] = useState<string>('');
   const [currentData, setCurrentData] = useState<any[]>([]);
 
   // Modal Controlls
@@ -31,7 +32,7 @@ export default () => {
 
   // Anti Spam Timers
   const [lastFetchData, setLastFetchData] = useState<number>(0);
-  
+
   // Form Controlls
   const [unitTypeForm, setUnitTypeForm] = useState<{
     warmUp: any,
@@ -67,45 +68,49 @@ export default () => {
     try {
       setLastFetchData(Date.now());
 
-      let pItem: any = {title: 'TopicalAreas'};
-      if (params.page === 'TrainingSession') {
+      let pItem: any = {title: params.page};
+     /* if (params.page === 'TrainingSession') {
         pItem = await getItem({projectionName: 'TopicalArea', projectionId: params.topicalAreaId});
       } else if (params.page === 'TrainingUnit') {
         pItem = await getItem({projectionName: 'TrainingSession', projectionId: params.trainingSessionId});
       } else {
-        console.error("Unknown page");
+
+      */
+
+      if(params.parentId !== undefined) {
+        pItem = await getItem({projectionName: params.page, projectionId: params.parentId});
+        setCurrentPage(pItem)
+        setPageHeader(
+          <PageHeader
+            ghost={false}
+            onBack={() => window.history.back()}
+            title={params.page}
+          />
+        );
+      } else {
+        setPageHeader(
+          <PageHeader
+            title={params.page}
+          />
+        );
       }
 
+      console.log(params)
+      let list: any;
+      if(params.parentId !== undefined) {
+        console.log('getfiltered data');
+        list = await getItemList({projectionName: params.page, parentId: params.parentId})
+      } else {
+        list = await getItemList({projectionName: params.page})
+      }
 
-      const list: any = await getItemList({projectionName: params.page, parentId: pItem.projectionId})
       if (list.status === 'success') {
-        if (params.parentId && params.page !== 'TopicalArea') {
           setCurrentData(list.data);
-        } else {
-          setCurrentData(list.data);
-        }
       }
+
 
       const pageDefinition = await getPage({projectionName: params.page}) as API.TablePageDefinition
       const formCreate = pageDefinition.formCreate;
-
-      const setUnitTypeForms = async (): Promise<any> => {
-        const uTypeForm = {
-          warmUp: (await getPage({projectionName: 'WarmUp'})).formCreate,
-          playTime: (await getPage({projectionName: 'PlayTime'})).formCreate,
-          practiceDrill: (await getPage({projectionName: 'PracticeDrill'})).formCreate,
-          coachCorner: (await getPage({projectionName: 'CoachCorner'})).formCreate,
-          proTip: (await getPage({projectionName: 'ProTip'})).formCreate
-        }
-
-        setUnitTypeForm(uTypeForm);
-
-        return uTypeForm;
-      }
-
-      if (params.page === 'TrainingUnit') {
-        setUnitTypeForms()
-      }
 
       if (formCreate) {
         setCreateForm(formCreate);
@@ -115,7 +120,6 @@ export default () => {
         setEditForm(pageDefinition.formEdit);
       }
 
-      setParentItem(pItem);
 
       setColumns(formCreate?.properties?.map((prop) => {
         if (prop.valueType === 'color') {
@@ -138,35 +142,8 @@ export default () => {
         width: '8em',
         key: 'option',
         valueType: 'option',
-        render: (text, record, _, action) => [
-          <a key="edit" onClick={() => {
-            setCurrentEditItem(record);
-            openModal('edit', params.page);
-          }}>edit</a>,
-          <a key="delete" onClick={() => {
-            setCurrentEditItem(record);
-            openModal('delete', params.page);
-          }}>delete</a>,
-        ]
-      }, params.page !== 'TrainingUnit' ? {
-        title: 'Enter',
-        dataIndex: 'enter',
-        width: '6em',
-        key: 'option',
-        valueType: 'option',
-        render: (text, record, _, action) => [
-          <Tooltip title="enter">
-            <Button type="primary" shape="circle" icon={<ArrowRightOutlined />} onClick={() => {
-                if (params.page === 'TopicalArea') {
-                  history.push(`/listdata/TrainingSession/${record.projectionId}`);
-                } else {
-                  history.push(`/listdata/TrainingUnit/${params.topicalAreaId}/${record.projectionId}`);
-                }
-                window.location.reload();
-              }}/>
-          </Tooltip>
-        ]
-      } : {}]) as ProColumns[]);
+        render: (text, record, _, action) => {return getItemActions(pageDefinition.itemActions,params.page,record)}
+      }]) as ProColumns[]);
 
       tableRef?.current?.reload();
 
@@ -175,54 +152,25 @@ export default () => {
     }
   };
 
+
   useEffect(() => {
     fetchData();
   }, [])
 
-  useEffect(() => {
-    if (createForm?.rootObjectAggregateName === 'TrainingUnit') {
-      const form = createForm;
-      form.properties?.push({
-        titleKey: 'dependency',
-        key: 'depenedency',
-        dataIndex: 'dependency',
-        valueType: 'dependency',
-        fieldProps: {
-          name: ['type']
-        },
-        columns: ({ type }) => {
-          switch (type) {
-            case 'warmUp':
-              return unitTypeForm.warmUp.properties;
-            case 'playTime':
-              return unitTypeForm.playTime.properties;
-            case 'coachCorner':
-              return unitTypeForm.coachCorner.properties;
-            case 'practiceDrill':
-              return unitTypeForm.practiceDrill.properties;
-            case 'proTip':
-              return unitTypeForm.proTip.properties;
-            default:
-              return []
-          }
-        }
-      })
-
-      setCreateForm(form);
-    }
-  }, [unitTypeForm])
-
   const handleAdd = async (
     projectionName: string,
     properties: any) => {
+
+    console.log('handleAdd');
+
     //todo translate by api
     const hide = message.loading('loading');
     try {
       const createParameter = {projectionName};
 
-      properties.parentId = parentItem.projectionId;
-      
-      if (params.page === 'TrainingUnit') {  
+      properties.parentId = currentPage.projectionId;
+
+      if (params.page === 'TrainingUnit') {
         const unitBaseProps = ['type', 'subtitle', 'talents', 'parentId'];
         properties.data = Object.fromEntries(Object.entries(properties)
           .filter(([key, val]) => {
@@ -249,6 +197,32 @@ export default () => {
       return false;
     }
   };
+
+  const getItemActions = (itemActions: any|undefined, projectionName: string, item: any) => {
+
+    let actions = [];
+    console.log(itemActions)
+
+    for (const arrkey in itemActions) {
+      if(itemActions[arrkey].type === 'form') {
+        actions = actions.concat([
+          <a key={itemActions[arrkey].key} onClick={() => {
+          setCurrentEditItem(item);
+          openModal(itemActions[arrkey].key, projectionName);
+        }}>{itemActions[arrkey].key}</a>
+        ])
+      }
+      if(itemActions[arrkey].type === 'subobject') {
+        actions = actions.concat([
+          <a key={itemActions[arrkey].key} onClick={() => {
+            location.href=`/listdata/${itemActions[arrkey].projectionName}/${item.projectionId}`
+          }}>{itemActions[arrkey].key}</a>
+        ])
+      }
+      console.log(itemActions[arrkey]); // prints indexes: 0, 1, 2, 3
+    }
+    return actions;
+  }
 
   const handleUpdate = async (
     projectionName: string,
@@ -322,14 +296,7 @@ export default () => {
   return (
     <>
       {
-        params.page !== 'TopicalArea' ?
-        <PageHeader 
-          onBack={() => history.goBack()}
-          title={parentItem.title}
-        /> :
-        <PageHeader 
-          title={parentItem.title}
-        />
+        pageHeader
       }
       <Divider />
       <ProTable<API.Item>
@@ -382,10 +349,13 @@ export default () => {
           layoutType={'Form'}
           onFieldsChange={(changedField, allFields) => {
             console.log(changedField, allFields);
-            if (changedField[0].name[0] == 'title') {
-              setTopicalAreaPreview({title: changedField[0].value, color: topicalAreaPreview.color});
-            } else if (changedField[0].name[0] == 'color') {
-              setTopicalAreaPreview({title: topicalAreaPreview.title, color: changedField[0].value});
+
+            if(changedField[0] !== undefined) {
+              if (changedField[0].name[0] === 'title') {
+                setTopicalAreaPreview({title: changedField[0].value, color: topicalAreaPreview.color});
+              } else if (changedField[0].name[0] === 'color') {
+                setTopicalAreaPreview({title: topicalAreaPreview.title, color: changedField[0].value});
+              }
             }
           }}
           onFinish={async (values) => {
@@ -395,7 +365,7 @@ export default () => {
             }
           }}
           columns={createForm.properties ? createForm.properties : []}/>
-          
+
           <Divider type='vertical' style={{height: '100%'}}></Divider>
           <TopicalArea title={topicalAreaPreview.title} color={topicalAreaPreview.color}></TopicalArea>
       </Modal>
