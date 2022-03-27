@@ -1,0 +1,42 @@
+{
+  "name": "flux-eco/webinterface",
+  "description": "Component for flux-capacitor apps developed by fluxlabs",
+  "version": "0.0.1",
+  "type": "flux-app",
+  "keywords": [
+    "flux-ecosystem",
+    "flux-capacitor",
+    "fluxlabs ag"
+  ],
+  "homepage": "https://fluxlabs.ch",
+  "license": "GPL-3.0-only",
+  "authors": [
+    {
+      "name": "fluxlabs ag",
+      "email": "support@fluxlabs.ch",
+      "homepage": "https://fluxlabs.ch",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "support@fluxlabs.ch"
+  },
+  "require": {
+
+  },
+  "require-dev": {
+
+  },
+  "autoload": {
+
+  },
+  "config": {
+    "classmap-authoritative": false,
+    "optimize-autoloader": false,
+    "sort-packages": true,
+    "platform-check": false,
+    "allow-plugins": {
+      "composer/package-versions-deprecated": false
+    }
+  }
+}
