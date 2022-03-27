@@ -1,5 +1,11 @@
 declare namespace API {
-  type FormCreate = {
+  type createForm = {
+    rootObjectAggregateName?: string;
+    options?: { dragable?: boolean; showDragHandler?: any };
+    properties?: any[];
+  };
+
+  type editForm = {
     rootObjectAggregateName?: string;
     options?: { dragable?: boolean; showDragHandler?: any };
     properties?: any[];
@@ -12,12 +18,6 @@ declare namespace API {
     success?: boolean;
   };
 
-  type Page = {
-    title?: string;
-    url?: string;
-    avatar?: string;
-  };
-
   type Link = {
     title?: string;
     url?: string;
@@ -26,17 +26,11 @@ declare namespace API {
   type PageDefinition = {
     title?: string;
     avatar?: string;
-    formCreate?: FormCreate;
-    formEdit?: any[];
-    itemActions?: any[];
-  };
-
-  type TablePageDefinition = {
-    title?: string;
-    formCreate?: FormCreate;
-    formEdit?: any[];
+    pageType?: string;
+    createForm?: createForm;
+    editForm?: editForm;
     tableFilter?: any[];
-    table?: any[];
+    tableColums?: any[];
     itemActions?: any[];
   };
 
@@ -50,8 +44,6 @@ declare namespace API {
     total?: number;
     success?: boolean;
   };
-
-  type EditFormPageDefinition = array;
 
   type schemaObjectApi = {
     apiDefinition?: string;
@@ -101,14 +93,6 @@ declare namespace API {
   };
 
   type getPageParams = {
-    projectionName: string;
-  };
-
-  type getTableParams = {
-    projectionName: string;
-  };
-
-  type getEditFormPageDefinitionParams = {
     projectionName: string;
   };
 }

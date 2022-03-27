@@ -9,8 +9,6 @@ export async function getItemList(
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
-  console.log('query', queryParams);
-
   return request<API.itemList>(`/api/v1/query/${param0}/getItemList`, {
     method: 'GET',
     params: {
@@ -102,34 +100,6 @@ export async function getPage(
 ) {
   const { projectionName: param0, ...queryParams } = params;
   return request<API.PageDefinition>(`/api/v1/query/${param0}/getPage`, {
-    method: 'GET',
-    params: { ...queryParams },
-    ...(options || {}),
-  });
-}
-
-/** table page GET /api/v1/query/${param0}/getTable */
-export async function getTable(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getTableParams,
-  options?: { [key: string]: any },
-) {
-  const { projectionName: param0, ...queryParams } = params;
-  return request<API.TablePageDefinition>(`/api/v1/query/${param0}/getTable`, {
-    method: 'GET',
-    params: { ...queryParams },
-    ...(options || {}),
-  });
-}
-
-/** overview page GET /api/v1/query/${param0}/getEditFormDefinition */
-export async function getEditFormPageDefinition(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getEditFormPageDefinitionParams,
-  options?: { [key: string]: any },
-) {
-  const { projectionName: param0, ...queryParams } = params;
-  return request<API.EditFormPageDefinition>(`/api/v1/query/${param0}/getEditFormDefinition`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),

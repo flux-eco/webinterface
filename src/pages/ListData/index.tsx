@@ -2,16 +2,12 @@ import {useEffect, useRef} from 'react';
 import {useState} from 'react';
 import {BetaSchemaForm} from '@ant-design/pro-form';
 import {Button, Divider, message, PageHeader, Modal} from 'antd';
-import {create, deleteItem, getItem, getItemList, getPage, getPageList, update} from "@/services/flux-eco-system/api";
+import {create, deleteItem, getItem, getItemList, getPage, update} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
 import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table';
-import {history} from '@/.umi/core/history';
-import Tooltip from 'antd/es/tooltip';
-import { ArrowRightOutlined } from '@ant-design/icons';
 import { setLocale } from 'umi';
 import classNames from 'classnames';
 import styles from './style.less'
-import { TopicalArea } from '@/components/TopicalArea';
 
 setLocale('en-US') // TODO: dirty, find a better place
 
@@ -19,7 +15,6 @@ export default () => {
   const params: any = useParams();
   const tableRef = useRef<ActionType>();
 
-  const [currentPage, setCurrentPage] = useState<{}>({});
   const [pageHeader, setPageHeader] = useState<string>('');
   const [currentData, setCurrentData] = useState<any[]>([]);
 
@@ -47,39 +42,19 @@ export default () => {
     practiceDrill: {},
     proTip: {}
   });
-  const [topicalAreaPreview, setTopicalAreaPreview] = useState<{
-    title?: string,
-    color?: string
-  }>({})
 
   // code gen objects
-  const [createForm, setCreateForm] = useState<API.FormCreate>({});
-  const [editForm, setEditForm] = useState<any>({})
+  const [createForm, setCreateForm] = useState<API.createForm>({});
+  const [editForm, setEditForm] = useState<API.editForm>({})
   const [columns, setColumns] = useState<ProColumns<API.Item>[]>([]);
-
-  const fetchItem = async(projectionName: string, projectionId: string) => {
-    const item = await getItem(
-      {projectionName: projectionName, projectionId: projectionId}
-    )
-    return item;
-  }
 
   const fetchData = async () => {
     try {
       setLastFetchData(Date.now());
 
       let pItem: any = {title: params.page};
-     /* if (params.page === 'TrainingSession') {
-        pItem = await getItem({projectionName: 'TopicalArea', projectionId: params.topicalAreaId});
-      } else if (params.page === 'TrainingUnit') {
-        pItem = await getItem({projectionName: 'TrainingSession', projectionId: params.trainingSessionId});
-      } else {
-
-      */
-
       if(params.parentId !== undefined) {
         pItem = await getItem({projectionName: params.page, projectionId: params.parentId});
-        setCurrentPage(pItem)
         setPageHeader(
           <PageHeader
             ghost={false}
@@ -108,20 +83,15 @@ export default () => {
           setCurrentData(list.data);
       }
 
-
-      const pageDefinition = await getPage({projectionName: params.page}) as API.TablePageDefinition
-      const formCreate = pageDefinition.formCreate;
-
-      if (formCreate) {
-        setCreateForm(formCreate);
+      const pageDefinition = await getPage({projectionName: params.page}) as API.PageDefinition
+      if (pageDefinition.createForm !== undefined) {
+        setCreateForm(pageDefinition.createForm);
+      }
+      if (pageDefinition.editForm !== undefined) {
+        setEditForm(pageDefinition.editForm);
       }
 
-      if (pageDefinition.formEdit !== undefined) {
-        setEditForm(pageDefinition.formEdit);
-      }
-
-
-      setColumns(formCreate?.properties?.map((prop) => {
+      setColumns(pageDefinition.createForm?.properties?.map((prop) => {
         if (prop.valueType === 'color') {
           return {
             title: prop.title,
@@ -160,27 +130,11 @@ export default () => {
   const handleAdd = async (
     projectionName: string,
     properties: any) => {
-
-    console.log('handleAdd');
-
     //todo translate by api
     const hide = message.loading('loading');
     try {
       const createParameter = {projectionName};
-
       properties.parentId = params.parentId;
-
-      if (params.page === 'TrainingUnit') {
-        const unitBaseProps = ['type', 'subtitle', 'talents', 'parentId'];
-        properties.data = Object.fromEntries(Object.entries(properties)
-          .filter(([key, val]) => {
-            return !unitBaseProps.includes(key);
-          }).map(prop => {
-            delete properties[prop[0]];
-            return prop
-          }))
-      }
-
       if (createParameter.projectionName) {
         await create(createParameter, properties);
       }
@@ -199,7 +153,6 @@ export default () => {
   };
 
   const getItemActions = (itemActions: any|undefined, projectionName: string, item: any) => {
-
     let actions = [];
     console.log(itemActions)
 
@@ -271,17 +224,17 @@ export default () => {
     }
   };
 
-  const openModal = (type: 'edit' | 'create' | 'delete', projection: string) => {
+  const openModal = (type: 'editForm' | 'createForm' | 'deleteForm', projection: string) => {
     setCurrentProjectionAction(projection);
 
     switch (type) {
-      case 'edit':
+      case 'editForm':
         setModalEditFormVisibility(true);
         break;
-      case 'create':
+      case 'createForm':
         setModalCreateFormVisibility(true);
         break;
-      case 'delete':
+      case 'deleteForm':
         setModalDeleteFormVisibility(true);
         break;
     }
@@ -324,7 +277,7 @@ export default () => {
         }}
         rowKey="key"
         toolBarRender={() => [
-          <Button key="show" type='primary' onClick={() => openModal('create', params.page)}>
+          <Button key="show" type='primary' onClick={() => openModal('createForm', params.page)}>
             Add
           </Button>,
         ]}>
@@ -349,14 +302,6 @@ export default () => {
           layoutType={'Form'}
           onFieldsChange={(changedField, allFields) => {
             console.log(changedField, allFields);
-
-            if(changedField[0] !== undefined) {
-              if (changedField[0].name[0] === 'title') {
-                setTopicalAreaPreview({title: changedField[0].value, color: topicalAreaPreview.color});
-              } else if (changedField[0].name[0] === 'color') {
-                setTopicalAreaPreview({title: topicalAreaPreview.title, color: changedField[0].value});
-              }
-            }
           }}
           onFinish={async (values) => {
             const success = await handleAdd(currentProjectionAction, values as API.Item);
@@ -366,8 +311,7 @@ export default () => {
           }}
           columns={createForm.properties ? createForm.properties : []}/>
 
-          <Divider type='vertical' style={{height: '100%'}}></Divider>
-          <TopicalArea title={topicalAreaPreview.title} color={topicalAreaPreview.color}></TopicalArea>
+          <Divider type='vertical' style={{height: '100%'}} />
       </Modal>
 
       <Modal
@@ -393,12 +337,12 @@ export default () => {
               closeModal();
             }
           }}
-          columns={createForm.properties as any}
+          columns={editForm.properties as any}
         />
       </Modal>
 
       <Modal
-        //Edit Form as Modal
+        //Delete Form as Modal
         title="Delete"
         width="400px"
         visible={modalDeleteFormVisibility}
@@ -416,15 +360,6 @@ export default () => {
             }
           }}>Delete</Button>
         ]}
-        // onFinish={async (values) => {
-        //   const success = await handleRemove(
-        //     params.page,
-        //     currentEditItemId
-        //   );
-        //   if (success) {
-        //     setModalEditFormVisibility(false);
-        //   }
-        // }}
       >
         <h1>Are you sure?</h1>
       </Modal>
