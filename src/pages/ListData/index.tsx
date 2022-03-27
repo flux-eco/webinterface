@@ -233,7 +233,7 @@ export default () => {
     try {
 
       const updateParameter = {projectionName, projectionId};
-
+      properties.parentId = params.parentId;
       properties.image = null;
 
       await update(
