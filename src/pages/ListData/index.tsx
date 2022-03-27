@@ -168,7 +168,7 @@ export default () => {
     try {
       const createParameter = {projectionName};
 
-      properties.parentId = currentPage.projectionId;
+      properties.parentId = params.parentId;
 
       if (params.page === 'TrainingUnit') {
         const unitBaseProps = ['type', 'subtitle', 'talents', 'parentId'];
