@@ -42,3 +42,5 @@ build
 
 # generated
 # /src/services
+
+.htpasswd
