@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Ant Design Pro
 
 This project is initialized with [Ant Design Pro](https://pro.ant.design). Follow is the quick guide for how to use.
@@ -52,11 +51,3 @@ npm run lint:fix
 ```bash
 npm test
 ```
-
-## More
-
-You can view full document on our [official website](https://pro.ant.design). And welcome any feedback in our [github](https://github.com/ant-design/ant-design-pro).
-=======
-# Flux Webinterface
-
->>>>>>> 0f4dcda3b632c85f8e93750aa7fa556311d6910a
