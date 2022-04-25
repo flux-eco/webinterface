@@ -13,6 +13,8 @@ export async function getItemList(
     method: 'GET',
     params: {
       ...queryParams,
+      sort: undefined,
+      ...queryParams['sort'],
     },
     ...(options || {}),
   });
@@ -25,7 +27,7 @@ export async function getItem(
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, projectionId: param1, ...queryParams } = params;
-  return request<API.Item>(`/api/v1/query/${param0}/item/${param1}/getItem`, {
+  return request<API.item>(`/api/v1/query/${param0}/item/${param1}/getItem`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),
@@ -36,7 +38,7 @@ export async function getItem(
 export async function update(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateParams,
-  body: API.Item,
+  body: API.item,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, projectionId: param1, ...queryParams } = params;
@@ -55,7 +57,7 @@ export async function update(
 export async function create(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.createParams,
-  body: API.Item,
+  body: API.item,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
@@ -86,7 +88,7 @@ export async function deleteItem(
 
 /** list pages GET /api/v1/query/getPageList */
 export async function getPageList(options?: { [key: string]: any }) {
-  return request<API.PageList>('/api/v1/query/getPageList', {
+  return request<API.pageList>('/api/v1/query/getPageList', {
     method: 'GET',
     ...(options || {}),
   });
@@ -99,7 +101,7 @@ export async function getPage(
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
-  return request<API.PageDefinition>(`/api/v1/query/${param0}/getPage`, {
+  return request<API.page>(`/api/v1/query/${param0}/getPage`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),

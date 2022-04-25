@@ -23,7 +23,7 @@ export default defineConfig({
   // https://umijs.org/zh-CN/plugins/plugin-locale
   locale: {
     // default zh-CN
-    default: 'en-US',
+    default: 'de_DE',
     antd: true,
     // default true, when it is true, will use `navigator.language` overwrite default
     baseNavigator: true,
@@ -70,4 +70,6 @@ export default defineConfig({
   mfsu: {},
   webpack5: {},
   exportStatic: {},
+  base: '/',
+  publicPath: '/'
 });

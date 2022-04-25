@@ -1,60 +1,57 @@
 import React, {useEffect, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import {getPageList} from '@/services/flux-eco-system/api';
-import {history} from '@/.umi/core/history';
 import {List} from 'antd';
 import classNames from 'classnames';
 import styles from './style.less'
-import { Card, Typography } from 'antd';
-const { Meta } = Card;
+import {Card} from 'antd';
+const {Meta} = Card;
 
 const Pages: React.FC = () => {
-  const location = history.location.pathname;
-  const [pages, setPages] = useState<API.Page[]>([]);
+  const [currentPageList, setCurrentPageList] = useState<API.pageList>({});
 
-  const fetchData = async () => {
+  const fetchPageList = async (): Promise<API.pageList> => {
     try {
-      const pageList = await getPageList();
-      if (pageList.data) {
-        setPages(pageList.data);
-      }
-    } catch (err) {
-      console.error('Fetch Data failed ', err)
+      return await getPageList();
+    } catch (error) {
+      console.error('fetch data failed ', error)
     }
-  };
+    return {} as API.pageList
+  }
 
   useEffect(() => {
-    fetchData();
-  }, [location]);
-  // asyncFetch();
+    const promisePageList = fetchPageList();
+    promisePageList.then(pageList => {
+      setCurrentPageList(pageList)
+    })
+  }, []);
 
 
   return (
     <>
-    <PageContainer className={classNames(styles.container)}>
-      <List
-        dataSource={pages}
-        className={classNames(styles.list)}
-        renderItem={(page: any) =>
-          (
-            <List.Item className={classNames(styles.listItem)}>
-
-              <Card
-                hoverable
-                className={classNames(styles.card)}
-                cover={<img alt="{page.projectionName}" src={page.avatar} />}
-                onClick={() => history.push(`${page.pageType}/${page.projectionName}` as string)}
-              >
-                <Meta title={page.title} />
-              </Card>
-            </List.Item>
-          )
-        }>
-      </List>
-
-    </PageContainer>
+      <PageContainer className={classNames(styles.container)}>
+        <List
+          dataSource={currentPageList.data}
+          className={classNames(styles.list)}
+          renderItem={(page: any) =>
+            (
+              <List.Item className={classNames(styles.listItem)}>
+                <Card
+                  hoverable
+                  className={classNames(styles.card)}
+                  cover={<img alt="{page.projectionName}" src={page.avatar}/>}
+                  onClick={() => {
+                    location.href = `${page.pageType}/${page.projectionName}`
+                  }}
+                >
+                  <Meta title={page.title}/>
+                </Card>
+              </List.Item>
+            )
+          }>
+        </List>
+      </PageContainer>
     </>
   );
 };
-
 export default Pages;

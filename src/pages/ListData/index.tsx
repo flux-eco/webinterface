@@ -1,174 +1,125 @@
-import {useEffect, useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {useState} from 'react';
-import {BetaSchemaForm} from '@ant-design/pro-form';
-import {Button, Divider, message, PageHeader, Modal} from 'antd';
-import {create, deleteItem, getItem, getItemList, getPage, update} from "@/services/flux-eco-system/api";
+import {Button, Divider} from 'antd';
+import {getItemList, getPage} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
-import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table';
-import { setLocale } from 'umi';
-import classNames from 'classnames';
-import styles from './style.less'
+import ProTable, {ActionType} from '@ant-design/pro-table';
+import {setLocale} from 'umi';
+import CreateForm from "@/components/CreateForm";
+import EditForm from "@/components/EditForm";
+import DeleteForm from "@/components/DeleteForm";
 
-setLocale('en-US') // TODO: dirty, find a better place
+setLocale('de-DE') // TODO: dirty, find a better place
 
 export default () => {
   const params: any = useParams();
   const tableRef = useRef<ActionType>();
 
-  const [pageHeader, setPageHeader] = useState<string>('');
-  const [currentData, setCurrentData] = useState<any[]>([]);
-
   // Modal Controlls
-  const [modalCreateFormVisibility, setModalCreateFormVisibility] = useState<boolean>(false);
-  const [currentEditItem, setCurrentEditItem] = useState<any>({});
-  const [modalEditFormVisibility, setModalEditFormVisibility] = useState<boolean>(false);
-  const [modalDeleteFormVisibility, setModalDeleteFormVisibility] = useState<boolean>(false);
-  const [currentProjectionAction, setCurrentProjectionAction] = useState<string>(params.page);
+  const [creationFormIsVisible, showCreationForm] = useState<boolean>(false);
+  const [currentCreationForm, setCurrentCreationForm] = useState<API.createForm>({});
 
-  // Anti Spam Timers
-  const [lastFetchData, setLastFetchData] = useState<number>(0);
+  const [editFormIsVisible, showEditForm] = useState<boolean>(false);
+  const [currentEditForm, setCurrentEditForm] = useState<API.editForm>({});
 
-  // Form Controlls
-  const [unitTypeForm, setUnitTypeForm] = useState<{
-    warmUp: any,
-    playTime: any,
-    coachCorner: any,
-    practiceDrill: any,
-    proTip: any
-  }>({
-    warmUp: {},
-    playTime: {},
-    coachCorner: {},
-    practiceDrill: {},
-    proTip: {}
-  });
+  const [deleteFormIsVisible, showDeleteForm] = useState<boolean>(false);
 
-  // code gen objects
-  const [createForm, setCreateForm] = useState<API.createForm>({});
-  const [editForm, setEditForm] = useState<API.editForm>({})
-  const [columns, setColumns] = useState<ProColumns<API.Item>[]>([]);
+  const [currentEditItem, setCurrentEditItem] = useState<API.item>({});
 
-  const fetchData = async () => {
+  const [currentPage, setCurrentPage] = useState<API.page>({});
+  const [currentTableColumns, setCurrentTableColumns] = useState<API.column[]>([]);
+
+
+  const fetchItemList = async (
+    offset: number | undefined,
+    limit: number | undefined,
+    sort: API.sort | undefined,
+    search: string | undefined): Promise<API.itemList> => {
+
     try {
-      setLastFetchData(Date.now());
-
-      let pItem: any = {title: params.page};
-      if(params.parentId !== undefined) {
-        pItem = await getItem({projectionName: params.page, projectionId: params.parentId});
-        setPageHeader(
-          <PageHeader
-            ghost={false}
-            onBack={() => window.history.back()}
-            title={params.page}
-          />
-        );
-      } else {
-        setPageHeader(
-          <PageHeader
-            title={params.page}
-          />
-        );
+      switch (params.parentId) {
+        case undefined:
+          return await getItemList({
+            projectionName: params.page,
+            offset: offset,
+            limit: limit,
+            sort: sort,
+            search: search
+          })
+        default:
+          return await getItemList({
+            projectionName: params.page,
+            parentId: params.parentId,
+            offset: offset,
+            limit: limit,
+            sort: sort,
+            search: search
+          })
       }
-
-      console.log(params)
-      let list: any;
-      if(params.parentId !== undefined) {
-        console.log('getfiltered data');
-        list = await getItemList({projectionName: params.page, parentId: params.parentId})
-      } else {
-        list = await getItemList({projectionName: params.page})
-      }
-
-      if (list.status === 'success') {
-          setCurrentData(list.data);
-      }
-
-      const pageDefinition = await getPage({projectionName: params.page}) as API.PageDefinition
-      if (pageDefinition.createForm !== undefined) {
-        setCreateForm(pageDefinition.createForm);
-      }
-      if (pageDefinition.editForm !== undefined) {
-        setEditForm(pageDefinition.editForm);
-      }
-
-      setColumns(pageDefinition.createForm?.properties?.map((prop) => {
-        if (prop.valueType === 'color') {
-          return {
-            title: prop.title,
-            dataIndex: prop.dataIndex,
-            render: (text, record, _, action) => [
-              <div className={classNames(styles.color)} style={{backgroundColor: record.color}}></div>
-            ]
-          } as ProColumns
-        } else {
-          return {
-            title: prop.title,
-            dataIndex: prop.dataIndex,
-          } as ProColumns
-        }
-      }).concat([{
-        title: 'Actions',
-        dataIndex: 'actions',
-        width: '8em',
-        key: 'option',
-        valueType: 'option',
-        render: (text, record, _, action) => {return getItemActions(pageDefinition.itemActions,params.page,record)}
-      }]) as ProColumns[]);
-
-      tableRef?.current?.reload();
-
-    } catch (err) {
-      console.error('Fetch Data failed ', err)
-    }
-  };
-
-
-  useEffect(() => {
-    fetchData();
-  }, [])
-
-  const handleAdd = async (
-    projectionName: string,
-    properties: any) => {
-    //todo translate by api
-    const hide = message.loading('loading');
-    try {
-      const createParameter = {projectionName};
-      properties.parentId = params.parentId;
-      if (createParameter.projectionName) {
-        await create(createParameter, properties);
-      }
-      hide();
-      //todo translate by api
-      message.success('Added successfully');
-      await fetchData();
-      return true;
     } catch (error) {
-      hide();
-      //todo translate by api
-      message.error('Adding failed, please try again!');
-      await fetchData();
-      return false;
+      console.error('Fetch Data failed ', error)
     }
+
+    return {} as API.itemList
   };
 
-  const getItemActions = (itemActions: any|undefined, projectionName: string, item: any) => {
+
+  const fetchPage = async (): Promise<API.page> => {
+    const page = await getPage({projectionName: params.page})
+    if (page.table?.createForm?.columns !== undefined) {
+      setCurrentCreationForm(page.table.createForm);
+    }
+    if (page.table?.editForm?.columns !== undefined) {
+      setCurrentEditForm(page.table.editForm);
+    }
+
+    if(page.table?.columns !== undefined) {
+      const columns = page.table?.columns;
+      setCurrentTableColumns(
+        columns.concat([{
+          title: 'Actions',
+          dataIndex: 'actions',
+          key: 'option',
+          valueType: 'option',
+          render: (text, record, _, action) => {
+            return getItemActions(page.table?.itemActions, page.pageMetadata?.projectionName, record)
+
+          }
+        }])
+      )
+    }
+    return currentPage;
+  }
+
+  const getItemActions = (itemActions: any | undefined, projectionName: string, item: any) => {
     let actions = [];
     console.log(itemActions)
 
     for (const arrkey in itemActions) {
-      if(itemActions[arrkey].type === 'form') {
+      if (itemActions[arrkey].type === 'form') {
         actions = actions.concat([
           <a key={itemActions[arrkey].key} onClick={() => {
-          setCurrentEditItem(item);
-          openModal(itemActions[arrkey].key, projectionName);
-        }}>{itemActions[arrkey].key}</a>
+            setCurrentEditItem(item);
+            if(itemActions[arrkey].key === "delete") {
+              showDeleteForm(true)
+            }
+            if(itemActions[arrkey].key === "edit") {
+              showEditForm(true)
+            }
+          }}>{itemActions[arrkey].key}</a>
         ])
       }
-      if(itemActions[arrkey].type === 'subobject') {
+      if (itemActions[arrkey].type === 'subobject') {
         actions = actions.concat([
           <a key={itemActions[arrkey].key} onClick={() => {
-            location.href=`/listdata/${itemActions[arrkey].projectionName}/${item.projectionId}`
+            location.href = `/listdata/${projectionName}/${item.projectionId}`
+          }}>{itemActions[arrkey].key}</a>
+        ])
+      }
+      if (itemActions[arrkey].type === 'backendAction') {
+        actions = actions.concat([
+          <a key={itemActions[arrkey].key} onClick={() => {
+            location.href = `/api/v1/command/${projectionName}/item/${item.projectionId}/createIliasCourse`
           }}>{itemActions[arrkey].key}</a>
         ])
       }
@@ -177,192 +128,77 @@ export default () => {
     return actions;
   }
 
-  const handleUpdate = async (
-    projectionName: string,
-    projectionId: string,
-    properties: any
-  ) => {
-    const hide = message.loading('Configuring');
-    try {
 
-      const updateParameter = {projectionName, projectionId};
-      properties.parentId = params.parentId;
-      properties.image = null;
-
-      await update(
-        updateParameter, properties
+  /*  let pItem: any = {title: params.page};
+    if (params.parentId !== undefined) {
+      pItem = await getItem({projectionName: params.page, projectionId: params.parentId});
+      setPageHeader(
+        <PageHeader
+          ghost={false}
+          onBack={() => window.history.back()}
+          title={params.page}
+        />
       );
-      hide();
-
-      message.success('Configuration is successful');
-      await fetchData();
-      return true;
-    } catch (error) {
-      hide();
-      message.error('Configuration failed, please try again!');
-      return false;
+    } else {
+      setPageHeader(
+        <PageHeader
+          title={params.page}
+        />
+      );
     }
-  };
 
-  const handleRemove = async (projectionName: string, projectionId: string) => {
-    const hide = message.loading('Loading');
+*/
 
-    try {
-      await deleteItem({
-        projectionName: projectionName,
-        projectionId: projectionId
-      });
-
-      hide();
-      message.success('Deleted successfully and will refresh soon');
-      await fetchData();
-      return true;
-    } catch (error) {
-      hide();
-      message.error('Delete failed, please try again');
-      return false;
-    }
-  };
-
-  const openModal = (type: 'editForm' | 'createForm' | 'deleteForm', projection: string) => {
-    setCurrentProjectionAction(projection);
-
-    switch (type) {
-      case 'editForm':
-        setModalEditFormVisibility(true);
-        break;
-      case 'createForm':
-        setModalCreateFormVisibility(true);
-        break;
-      case 'deleteForm':
-        setModalDeleteFormVisibility(true);
-        break;
-    }
-  }
-
-  const closeModal = () => {
-    setModalEditFormVisibility(false);
-    setModalCreateFormVisibility(false);
-    setModalDeleteFormVisibility(false);
-  }
+  useEffect(() => {
+    const promisePage = fetchPage();
+    promisePage.then(page => {
+      setCurrentPage(page)
+    })
+  }, [])
 
   return (
     <>
-      {
-        pageHeader
-      }
-      <Divider />
-      <ProTable<API.Item>
-        columns={columns}
+      <Divider/>
+      <ProTable<API.item>
+        params={params}
+        columns= {currentTableColumns}
         actionRef={tableRef}
-        request={async (param, sorter, filter) => {
-          if (lastFetchData + 1000 < Date.now()) { // spam protection
-            await fetchData();
-          }
-
-          return {
-            data: currentData,
-            success: true,
-            total: currentData.length
-          };
+        search={false}
+        options={{
+          search: true,
+        }}
+        request={(params,
+                  sort,
+                  filter) => {
+          return Promise.resolve(
+            fetchItemList(params.current, params.pageSize, sort, params.search)
+          )
         }}
         onRow={(record, index) => {
           return {
-            onClick: event => {}, // click row
-            onDoubleClick: event => {}, // double click row
-            onContextMenu: event => {}, // right button click row
-            onMouseEnter: event => {}, // mouse enter row
-            onMouseLeave: event => {}, // mouse leave row
+            onClick: event => {
+            }, // click row
+            onDoubleClick: event => {
+            }, // double click row
+            onContextMenu: event => {
+            }, // right button click row
+            onMouseEnter: event => {
+            }, // mouse enter row
+            onMouseLeave: event => {
+            }, // mouse leave row
           };
         }}
         rowKey="key"
         toolBarRender={() => [
-          <Button key="show" type='primary' onClick={() => openModal('createForm', params.page)}>
+          <Button key="show" type='primary' onClick={() => showCreationForm(true)}>
             Add
           </Button>,
         ]}>
       </ProTable>
 
-      <Modal
-        // Creation Form as Modal
-        title="New Entry"
-        visible={modalCreateFormVisibility}
-        onCancel={() => closeModal()}
-        destroyOnClose={true}
-        footer={false}
-        bodyStyle={{
-          display: 'flex',
-          justifyContent: 'space-evenly',
-          alignItems: 'center',
-          gap: '1em'
-        }}
-        width='60vw'
-      >
-        <BetaSchemaForm
-          layoutType={'Form'}
-          onFieldsChange={(changedField, allFields) => {
-            console.log(changedField, allFields);
-          }}
-          onFinish={async (values) => {
-            const success = await handleAdd(currentProjectionAction, values as API.Item);
-            if (success) {
-              closeModal();
-            }
-          }}
-          columns={createForm.properties ? createForm.properties : []}/>
-
-          <Divider type='vertical' style={{height: '100%'}} />
-      </Modal>
-
-      <Modal
-        //Edit Form as Modal
-        title="Edit Entry"
-        width="400px"
-        visible={modalEditFormVisibility}
-        onCancel={() => closeModal()}
-        destroyOnClose={true}
-        footer={false}
-      >
-        <BetaSchemaForm<API.Item>
-          layoutType={'Form'}
-          shouldUpdate={(newVal, oldVal) => {
-              return true
-            }
-          }
-          initialValues={currentEditItem}
-          syncToInitialValues={true}
-          onFinish={async (values) => {
-            const success = await handleUpdate(currentProjectionAction, currentEditItem.projectionId, values as API.Item);
-            if (success) {
-              closeModal();
-            }
-          }}
-          columns={editForm.properties as any}
-        />
-      </Modal>
-
-      <Modal
-        //Delete Form as Modal
-        title="Delete"
-        width="400px"
-        visible={modalDeleteFormVisibility}
-        onCancel={() => closeModal()}
-        destroyOnClose={true}
-        footer={[
-          <Button key="cancel" onClick={() => closeModal()}>Cancel</Button>,
-          <Button key="delete" type='primary' danger onClick={async () => {
-            const success = await handleRemove(
-              currentProjectionAction,
-              currentEditItem.projectionId
-            );
-            if (success) {
-              closeModal();
-            }
-          }}>Delete</Button>
-        ]}
-      >
-        <h1>Are you sure?</h1>
-      </Modal>
+      {creationFormIsVisible && <CreateForm title={currentCreationForm.title} columns={currentCreationForm.columns} params={params} projectionName={params.page}/>}
+      {editFormIsVisible && <EditForm title={currentEditForm.title} columns={currentEditForm.columns} params={params} projectionName={params.page}/>}
+      {deleteFormIsVisible && <DeleteForm title={'Datensatz Löschen'} params={params} projectionName={params.page} projectionId={currentEditItem.projectionId}/>}
     </>
   );
 };

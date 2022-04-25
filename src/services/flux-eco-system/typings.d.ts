@@ -1,64 +1,81 @@
 declare namespace API {
   type createForm = {
+    title?: string;
     rootObjectAggregateName?: string;
     options?: { dragable?: boolean; showDragHandler?: any };
-    properties?: any[];
+    columns?: formColumn[];
   };
 
   type editForm = {
+    title?: string;
     rootObjectAggregateName?: string;
     options?: { dragable?: boolean; showDragHandler?: any };
-    properties?: any[];
+    columns?: formColumn[];
   };
 
-  type PageList = {
-    data?: Page[];
+  type table = {
+    columns?: column[];
+    createForm?: createForm;
+    editForm?: editForm;
+    itemActions?: any[];
+  };
+
+  type sort = {
+    key?: string;
+    sortOrder?: string;
+  };
+
+  type column = {
+    title?: string;
+    dataIndex?: string;
+    sorter?: boolean;
+  };
+
+  type formColumn = {
+    title?: string;
+    key?: string;
+    dataIndex?: string;
+    valueType?: string;
+    width?: string;
+    formItemProps?: { rules?: { required?: boolean; message?: string }[] };
+  };
+
+  type pageList = {
+    data?: pageMetadata[];
     /** total Pages */
     total?: number;
     success?: boolean;
   };
 
-  type Link = {
+  type link = {
     title?: string;
     url?: string;
   };
 
-  type PageDefinition = {
+  type page = {
+    pageMetadata?: pageMetadata;
+    table?: table;
+  };
+
+  type pageMetadata = {
     title?: string;
     avatar?: string;
     pageType?: string;
-    createForm?: createForm;
-    editForm?: editForm;
-    tableFilter?: any[];
-    tableColums?: any[];
-    itemActions?: any[];
+    projectionName?: string;
   };
 
-  type Item = {
+  type item = {
     projectionId?: string;
   };
 
   type itemList = {
-    data?: Item[];
+    data?: item[];
     /** total Modules */
     total?: number;
     success?: boolean;
   };
 
-  type schemaObjectApi = {
-    apiDefinition?: string;
-    channel?: string;
-    operationType?: string;
-    apiLink?: string;
-  };
-
-  type ListSource = {
-    url?: string;
-    offset?: number;
-    limit?: number;
-  };
-
-  type ErrorResponse = {
+  type errorResponse = {
     /** 42 */
     errorCode: string;
     /** Error */
@@ -71,6 +88,14 @@ declare namespace API {
     projectionName: string;
     /** Query items by its parent */
     parentId?: string;
+    /** The number of items to skip before starting to collect the result set */
+    offset?: number;
+    /** The numbers of items to return */
+    limit?: number;
+    /** Sort key and direction */
+    sort?: sort;
+    /** A search string */
+    search?: string;
   };
 
   type getItemParams = {
