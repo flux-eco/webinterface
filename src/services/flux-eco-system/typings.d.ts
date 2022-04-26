@@ -2,15 +2,26 @@ declare namespace API {
   type createForm = {
     title?: string;
     rootObjectAggregateName?: string;
-    options?: { dragable?: boolean; showDragHandler?: any };
+    options?: any;
     columns?: formColumn[];
   };
 
   type editForm = {
     title?: string;
     rootObjectAggregateName?: string;
-    options?: { dragable?: boolean; showDragHandler?: any };
+    options?: any;
     columns?: formColumn[];
+  };
+
+  type listData = {
+    mappings?: { title?: dataPointer; subtitle?: dataPointer; description?: dataPointer };
+    actions?: action[];
+  };
+
+  type action = {
+    title?: string;
+    type?: 'backendAction' | 'frontendAction';
+    operation?: string;
   };
 
   type table = {
@@ -29,6 +40,7 @@ declare namespace API {
     title?: string;
     dataIndex?: string;
     sorter?: boolean;
+    render?: Record<string, any>;
   };
 
   type formColumn = {
@@ -47,14 +59,23 @@ declare namespace API {
     success?: boolean;
   };
 
+  type dataPointer = {
+    dataIndex?: string;
+  };
+
   type link = {
     title?: string;
     url?: string;
   };
 
-  type page = {
+  type tablePage = {
     pageMetadata?: pageMetadata;
     table?: table;
+  };
+
+  type listPage = {
+    pageMetadata?: pageMetadata;
+    listData?: listData;
   };
 
   type pageMetadata = {

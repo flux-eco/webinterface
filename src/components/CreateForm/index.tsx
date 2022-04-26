@@ -6,7 +6,7 @@ import {create} from "@/services/flux-eco-system/api";
 
 export type ModalFormProps = {
   title: string;
-  columns: ProFormColumnsType[];
+  columns: API.formColumn[];
   projectionName: string;
   params: any;
 }
@@ -54,9 +54,6 @@ const CreateForm: React.FC<ModalFormProps> = (props ) => (
 
     <BetaSchemaForm
       layoutType={'Form'}
-      onFieldsChange={(changedField, allFields) => {
-        console.log(changedField, allFields);
-      }}
       onFinish={async (values) => {
         const success = await handleAdd(props.projectionName, values, props.params);
         if (success) {

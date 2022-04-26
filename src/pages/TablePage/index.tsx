@@ -3,15 +3,17 @@ import {useState} from 'react';
 import {Button, Divider} from 'antd';
 import {getItemList, getPage} from "@/services/flux-eco-system/api";
 import {useParams} from 'react-router';
-import ProTable, {ActionType} from '@ant-design/pro-table';
+import ProTable, {ActionType, ProColumns} from '@ant-design/pro-table';
 import {setLocale} from 'umi';
 import CreateForm from "@/components/CreateForm";
 import EditForm from "@/components/EditForm";
 import DeleteForm from "@/components/DeleteForm";
+import {ButtonType} from "antd/lib/button";
 
 setLocale('de-DE') // TODO: dirty, find a better place
 
 export default () => {
+
   const params: any = useParams();
   const tableRef = useRef<ActionType>();
 
@@ -27,7 +29,7 @@ export default () => {
   const [currentEditItem, setCurrentEditItem] = useState<API.item>({});
 
   const [currentPage, setCurrentPage] = useState<API.page>({});
-  const [currentTableColumns, setCurrentTableColumns] = useState<API.column[]>([]);
+  const [currentTableColumns, setCurrentTableColumns] = useState<API.column[]|ProColumns>([]);
 
 
   const fetchItemList = async (
@@ -35,7 +37,6 @@ export default () => {
     limit: number | undefined,
     sort: API.sort | undefined,
     search: string | undefined): Promise<API.itemList> => {
-
     try {
       switch (params.parentId) {
         case undefined:
@@ -64,7 +65,7 @@ export default () => {
   };
 
 
-  const fetchPage = async (): Promise<API.page> => {
+  const fetchPage = async (): Promise<API.tablePage> => {
     const page = await getPage({projectionName: params.page})
     if (page.table?.createForm?.columns !== undefined) {
       setCurrentCreationForm(page.table.createForm);
@@ -79,21 +80,19 @@ export default () => {
         columns.concat([{
           title: 'Actions',
           dataIndex: 'actions',
-          key: 'option',
-          valueType: 'option',
-          render: (text, record, _, action) => {
+          sorter: false,
+          render: (record: any) => {
             return getItemActions(page.table?.itemActions, page.pageMetadata?.projectionName, record)
-
           }
         }])
       )
     }
+    setCurrentPage(page)
     return currentPage;
   }
 
   const getItemActions = (itemActions: any | undefined, projectionName: string, item: any) => {
     let actions = [];
-    console.log(itemActions)
 
     for (const arrkey in itemActions) {
       if (itemActions[arrkey].type === 'form') {
@@ -120,10 +119,9 @@ export default () => {
         actions = actions.concat([
           <a key={itemActions[arrkey].key} onClick={() => {
             location.href = `/api/v1/command/${projectionName}/item/${item.projectionId}/createIliasCourse`
-          }}>{itemActions[arrkey].key}</a>
+          }}>{itemActions[arrkey].title}</a>
         ])
       }
-      console.log(itemActions[arrkey]); // prints indexes: 0, 1, 2, 3
     }
     return actions;
   }
@@ -150,10 +148,8 @@ export default () => {
 */
 
   useEffect(() => {
-    const promisePage = fetchPage();
-    promisePage.then(page => {
-      setCurrentPage(page)
-    })
+   fetchPage();
+
   }, [])
 
   return (
@@ -167,38 +163,23 @@ export default () => {
         options={{
           search: true,
         }}
+
         request={(params,
                   sort,
                   filter) => {
           return Promise.resolve(
-            fetchItemList(params.current, params.pageSize, sort, params.search)
+            fetchItemList(params.current, params.pageSize, sort, params.keyword)
           )
         }}
-        onRow={(record, index) => {
-          return {
-            onClick: event => {
-            }, // click row
-            onDoubleClick: event => {
-            }, // double click row
-            onContextMenu: event => {
-            }, // right button click row
-            onMouseEnter: event => {
-            }, // mouse enter row
-            onMouseLeave: event => {
-            }, // mouse leave row
-          };
-        }}
-        rowKey="key"
-        toolBarRender={() => [
-          <Button key="show" type='primary' onClick={() => showCreationForm(true)}>
-            Add
-          </Button>,
-        ]}>
+        rowKey="projectionId"
+        toolBarRender={(action) => [ <Button  key="show" type='primary' onClick={() => showCreationForm(true)}>  Add  </Button>]}
+        >
       </ProTable>
 
-      {creationFormIsVisible && <CreateForm title={currentCreationForm.title} columns={currentCreationForm.columns} params={params} projectionName={params.page}/>}
+      {creationFormIsVisible && <CreateForm title={currentCreationForm.title} columns={currentCreationForm.columns} params={params} projectionName={currentPage.pageMetadata?.projectionName}/>}
       {editFormIsVisible && <EditForm title={currentEditForm.title} columns={currentEditForm.columns} params={params} projectionName={params.page}/>}
       {deleteFormIsVisible && <DeleteForm title={'Datensatz Löschen'} params={params} projectionName={params.page} projectionId={currentEditItem.projectionId}/>}
-    </>
+
+  </>
   );
 };
