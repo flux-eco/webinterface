@@ -28,6 +28,13 @@
     component: './TablePage',
   },
   {
+    name: 'StepsFormPage',
+    icon: 'book',
+    path: '/stepsformpage/:page',
+    layout: false,
+    component: './StepsFormPage',
+  },
+  {
     name: 'Home',
     icon: 'book',
     path: '/home',
