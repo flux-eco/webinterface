@@ -70,6 +70,6 @@ export default defineConfig({
   mfsu: {},
   webpack5: {},
   exportStatic: {},
-  base: '/',
-  publicPath: '/'
+  base: '/flux-webinterface-code/',
+  publicPath: '/flux-webinterface-code/'
 });

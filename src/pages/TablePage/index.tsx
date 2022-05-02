@@ -9,6 +9,7 @@ import CreateForm from "@/components/CreateForm";
 import EditForm from "@/components/EditForm";
 import DeleteForm from "@/components/DeleteForm";
 import {ButtonType} from "antd/lib/button";
+import {evaluateRules} from "@/adapters/RuleEvaluator";
 
 setLocale('de-DE') // TODO: dirty, find a better place
 
@@ -81,8 +82,8 @@ export default () => {
           title: 'Actions',
           dataIndex: 'actions',
           sorter: false,
-          render: (record: any) => {
-            return getItemActions(page.table?.itemActions, page.pageMetadata?.projectionName, record)
+          render: (_, row, index, action) => {
+            return getItemActions(page.table?.itemActions, page.pageMetadata?.projectionName, row)
           }
         }])
       )
@@ -93,6 +94,9 @@ export default () => {
 
   const getItemActions = (itemActions: any | undefined, projectionName: string, item: any) => {
     let actions = [];
+
+    console.log('item');
+    console.log(item);
 
     for (const arrkey in itemActions) {
       if (itemActions[arrkey].type === 'form') {
@@ -108,6 +112,7 @@ export default () => {
           }}>{itemActions[arrkey].key}</a>
         ])
       }
+
       if (itemActions[arrkey].type === 'subobject') {
         actions = actions.concat([
           <a key={itemActions[arrkey].key} onClick={() => {
@@ -115,12 +120,23 @@ export default () => {
           }}>{itemActions[arrkey].key}</a>
         ])
       }
+
       if (itemActions[arrkey].type === 'backendAction') {
-        actions = actions.concat([
-          <a key={itemActions[arrkey].key} onClick={() => {
-            location.href = `/api/v1/command/${projectionName}/item/${item.projectionId}/createIliasCourse`
-          }}>{itemActions[arrkey].title}</a>
-        ])
+        let showCurrentAction = false;
+        if(itemActions[arrkey].rules !== undefined) {
+          const rules =  itemActions[arrkey].rules
+          showCurrentAction = evaluateRules(rules, item)
+        } else {
+          showCurrentAction = true
+        }
+
+        if(showCurrentAction) {
+          actions = actions.concat([
+            <a key={itemActions[arrkey].key} onClick={() => {
+              location.href = `/api/v1/command/${projectionName}/item/${item.projectionId}/createIliasCourse`
+            }}>{itemActions[arrkey].title}</a>
+          ])
+        }
       }
     }
     return actions;
@@ -167,8 +183,9 @@ export default () => {
         request={(params,
                   sort,
                   filter) => {
+          //params.current
           return Promise.resolve(
-            fetchItemList(params.current, params.pageSize, sort, params.keyword)
+            fetchItemList(0, params.pageSize, sort, params.keyword)
           )
         }}
         rowKey="projectionId"

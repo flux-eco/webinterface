@@ -1,12 +1,5 @@
 declare namespace API {
-  type createForm = {
-    title?: string;
-    rootObjectAggregateName?: string;
-    options?: any;
-    columns?: formColumn[];
-  };
-
-  type editForm = {
+  type form = {
     title?: string;
     rootObjectAggregateName?: string;
     options?: any;
@@ -21,14 +14,35 @@ declare namespace API {
   type action = {
     title?: string;
     type?: 'backendAction' | 'frontendAction';
+    rules?: rule[];
     operation?: string;
   };
 
+  type rule = {
+    propertyName: string;
+    condition: 'isEqual' | 'isNot' | 'isUndefined';
+    value: 'string' | 'integer';
+  };
+
   type table = {
-    columns?: column[];
-    createForm?: createForm;
-    editForm?: editForm;
-    itemActions?: any[];
+    search: boolean;
+    columns: tableColumn[];
+    createForm?: form;
+    editForm?: form;
+    itemActions?: any;
+  };
+
+  type tableColumn = {
+    title?: string | multiLanguageString;
+    key?: string;
+    sorter?: boolean;
+    render?: Record<string, any>;
+  };
+
+  type multiLanguageString = {
+    type: 'lngKey';
+    /** e.g. pageTitle.myCoursesAsAdmin */
+    key: string;
   };
 
   type sort = {
@@ -36,18 +50,10 @@ declare namespace API {
     sortOrder?: string;
   };
 
-  type column = {
-    title?: string;
-    dataIndex?: string;
-    sorter?: boolean;
-    render?: Record<string, any>;
-  };
-
   type formColumn = {
     title?: string;
     key?: string;
-    dataIndex?: string;
-    valueType?: string;
+    valueType?: 'string' | 'textarea';
     width?: string;
     formItemProps?: { rules?: { required?: boolean; message?: string }[] };
   };
@@ -79,10 +85,11 @@ declare namespace API {
   };
 
   type pageMetadata = {
-    title?: string;
-    avatar?: string;
-    pageType?: string;
-    projectionName?: string;
+    title: string | multiLanguageString;
+    url: string;
+    avatar: string;
+    pageType: 'tablePage' | 'listPage' | 'stepsFormPage';
+    projectionName: string;
   };
 
   type item = {
