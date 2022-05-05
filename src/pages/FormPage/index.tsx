@@ -2,9 +2,7 @@ import FluxProForm from "@/components/FluxProForm";
 import {useParams} from "react-router";
 import {fetchFormPage, formPage} from "@/adapters/Page";
 import {useEffect, useState} from "react";
-import FluxProFormRate from "@/components/FluxProFormRate";
 import FluxProFormText from "@/components/FluxProFormText";
-import {ProFormRate} from "@ant-design/pro-form";
 
 export default () => {
   const params: any = useParams();
