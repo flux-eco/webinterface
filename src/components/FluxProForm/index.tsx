@@ -1,20 +1,22 @@
 import ProForm from '@ant-design/pro-form';
+import {FluxProFormColumn} from "@/adapters/FluxProForm/FluxProForm";
 
 export type FluxProFormProps = {
-  formKey: string
-  formItems: any,
+  pageMetadata: API.pageMetadata;
+  columns: FluxProFormColumn[];
 }
+
 
 const FluxProForm = (props: FluxProFormProps) => (
   <ProForm
     //onFinish={}
     // formRef={}
     // params={}
-    formKey={props.formKey}
+    //formKey={props.pageMetadata.projectionName}
     // request={}
     // autoFocusFirstInput
   >
-    {props.formItems}
+    {props.columns}
   </ProForm>
 );
 

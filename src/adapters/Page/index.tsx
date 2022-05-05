@@ -1,5 +1,6 @@
 
 import {getPage} from "@/services/flux-eco-system/api";
+import {FluxProFormProps} from "@/components/FluxProForm";
 
 
 export const fetchListPage = async (projectionName: string): Promise<API.listPage> => {
@@ -10,21 +11,16 @@ export const fetchTablePage = async (projectionName: string): Promise<API.tableP
 }
 
 
-export type formPage = {
-  pageMetadata: API.pageMetadata;
-  form: API.form;
-}
 
-export const fetchFormPage = async (projectionName: string): Promise<formPage> => {
+
+export const fetchFormPage = async (projectionName: string): Promise<FluxProFormProps> => {
   return {pageMetadata: {
       title: "demo",
       pageType: "stepsFormPage",
       projectionName: projectionName,
       url: "/formPage/demo",
       avatar: "/formPage/demo.png"
-    }, form: {
-      formTitle: "demo",
-      columns: [
+    }, columns: [
         {
           title: "Name",
           width: "m",
@@ -32,6 +28,13 @@ export const fetchFormPage = async (projectionName: string): Promise<formPage> =
           formItemProps: {},
           valueType: "text"
         },
+      {
+        title: "Vorname",
+        width: "m",
+        dataIndex: "firstName",
+        formItemProps: {rules: [{required: true}]},
+        valueType: "text"
+      },
         {
           title: "Bewerte",
           width: "m",
@@ -40,16 +43,12 @@ export const fetchFormPage = async (projectionName: string): Promise<formPage> =
           valueType: "rate"
         },
         {
-          title: "Name",
+          title: "Wähle",
           width: "m",
-          dataIndex: "name",
+          dataIndex: "choose",
           formItemProps: {},
-          options: [
-            {"key": 0, "label": "ddd"}
-          ],
           valueType: "checkbox"
         },
       ]
-    }
   }
 }
