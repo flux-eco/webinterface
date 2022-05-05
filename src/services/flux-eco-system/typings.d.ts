@@ -1,9 +1,7 @@
 declare namespace API {
   type form = {
-    title?: string;
-    rootObjectAggregateName?: string;
-    options?: any;
-    columns?: formColumn[];
+    formTitle: string;
+    columns: formColumn[];
   };
 
   type listData = {
@@ -12,14 +10,14 @@ declare namespace API {
   };
 
   type action = {
-    title?: string;
-    type?: 'backendAction' | 'frontendAction';
-    rules?: rule[];
-    operation?: string;
+    title: string;
+    actionType: 'backendAction' | 'frontendAction';
+    rules: rule[];
+    operation: string;
   };
 
   type rule = {
-    propertyName: string;
+    propertyKey: string;
     condition: 'isEqual' | 'isNot' | 'isUndefined';
     value: 'string' | 'integer';
   };
@@ -27,15 +25,16 @@ declare namespace API {
   type table = {
     search: boolean;
     columns: tableColumn[];
+    showForm?: form;
     createForm?: form;
     editForm?: form;
     itemActions?: any;
   };
 
   type tableColumn = {
-    title?: string | multiLanguageString;
-    key?: string;
-    sorter?: boolean;
+    title: string | multiLanguageString;
+    dataIndex: string;
+    sorter: boolean;
     render?: Record<string, any>;
   };
 
@@ -51,18 +50,18 @@ declare namespace API {
   };
 
   type formColumn = {
-    title?: string;
-    key?: string;
-    valueType?: 'string' | 'textarea';
-    width?: string;
-    formItemProps?: { rules?: { required?: boolean; message?: string }[] };
+    title: string;
+    dataIndex: string;
+    valueType: string;
+    width: string;
+    formItemProps: { rules?: { required?: boolean; message?: string }[] };
   };
 
   type pageList = {
-    data?: pageMetadata[];
+    data: pageMetadata[];
     /** total Pages */
-    total?: number;
-    success?: boolean;
+    total: number;
+    success: boolean;
   };
 
   type dataPointer = {
@@ -70,18 +69,18 @@ declare namespace API {
   };
 
   type link = {
-    title?: string;
-    url?: string;
+    title: string;
+    url: string;
   };
 
   type tablePage = {
-    pageMetadata?: pageMetadata;
-    table?: table;
+    pageMetadata: pageMetadata;
+    table: table;
   };
 
   type listPage = {
-    pageMetadata?: pageMetadata;
-    listData?: listData;
+    pageMetadata: pageMetadata;
+    listData: listData;
   };
 
   type pageMetadata = {
@@ -93,14 +92,17 @@ declare namespace API {
   };
 
   type item = {
-    projectionId?: string;
+    data: any[];
+    /** total Modules */
+    total: number;
+    success: boolean;
   };
 
   type itemList = {
-    data?: item[];
+    data: item[];
     /** total Modules */
-    total?: number;
-    success?: boolean;
+    total: number;
+    success: boolean;
   };
 
   type errorResponse = {

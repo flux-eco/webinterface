@@ -1,5 +1,5 @@
-import React from 'react';
-import {getItemList} from "@/services/flux-eco-system/api";
+import {getItem, getItemList, update} from "@/services/flux-eco-system/api";
+import {message} from "antd";
 
 
 export const fetchItemList = async (
@@ -35,4 +35,38 @@ export const fetchItemList = async (
   }
 
   return {} as API.itemList
+};
+
+
+export const fetchItem = async (
+  projectionName: string,
+  projectionId: string
+): Promise<API.item> => {
+  try {
+      return   await getItem({
+        projectionName: projectionName,
+        projectionId: projectionId
+      })
+  } catch (error) {
+    console.error('Fetch Data failed ', error)
+  }
+
+  return {} as API.item
+};
+
+export const handleUpdate = async (
+  projectionName: string,
+  projectionId: string,
+  properties: any
+) => {
+  try {
+    const updateParameter = {projectionName, projectionId};
+    await update(
+      updateParameter, properties
+    );
+    return true;
+  } catch (error) {
+    message.error('Configuration failed, please try again!');
+    return false;
+  }
 };

@@ -14,6 +14,20 @@
     component: './ListPage',
   },
   {
+    name: 'FormPage',
+    icon: 'book',
+    path: '/formpage/:page',
+    layout: false,
+    component: './FormPage',
+  },
+  {
+    name: 'FormPage',
+    icon: 'book',
+    path: '/formpage/:page/:progressId',
+    layout: false,
+    component: './FormPage',
+  },
+  {
     name: 'TablePage',
     icon: 'book',
     path: '/tablepage/:page',
