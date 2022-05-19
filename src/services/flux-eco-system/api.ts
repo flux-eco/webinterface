@@ -120,7 +120,7 @@ export async function getPage(
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
-  return request<API.tablePage | API.listPage | API.cardPage | API.htmlPage | API.processPage>(
+  return request<API.tablePage | API.listPage | API.cardPage | API.htmlPage>(
     `/api/v1/query/${param0}/getPage`,
     {
       method: 'GET',
@@ -137,7 +137,7 @@ export async function getNextPage(
   options?: { [key: string]: any },
 ) {
   const { registrationId: param0, ...queryParams } = params;
-  return request<API.formPage>(`/api/v1/query/${param0}/getNextPage`, {
+  return request<API.processPage>(`/api/v1/query/${param0}/getNextPage`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),

@@ -151,8 +151,16 @@ declare namespace API {
   };
 
   type htmlPage = {
+    key: string;
     pageMetadata: pageMetadata;
     html: string;
+    steps?: step[];
+  };
+
+  type step = {
+    title?: string;
+    description?: string;
+    key?: number;
   };
 
   type cardPage = {
