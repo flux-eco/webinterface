@@ -1,18 +1,39 @@
 declare namespace API {
   type form = {
-    formTitle: string;
+    formTitle: { dataIndex?: string };
     columns: formColumn[];
   };
 
+  type cardList = {
+    cards?: card[];
+  };
+
+  type card = {
+    title?: string;
+    description?: string;
+    link?: string;
+    image?: string;
+    color?: string;
+    actions?: action[];
+  };
+
   type listData = {
-    mappings?: { title?: dataPointer; subtitle?: dataPointer; description?: dataPointer };
+    mappings?: {
+      title?: dataPointer;
+      subtitle?: dataPointer;
+      description?: dataPointer;
+      image?: dataPointer;
+      link?: dataPointer;
+    };
     actions?: action[];
   };
 
   type action = {
     title: string;
-    actionType: 'backendAction' | 'frontendAction';
-    rules: rule[];
+    key: string;
+    actionType?: 'backendAction' | 'frontendAction' | 'link';
+    icon?: 'open' | 'edit' | 'setting';
+    rules?: rule[];
     operation: string;
   };
 
@@ -28,7 +49,7 @@ declare namespace API {
     showForm?: form;
     createForm?: form;
     editForm?: form;
-    itemActions?: any;
+    itemActions?: action[];
   };
 
   type tableColumn = {
@@ -52,8 +73,44 @@ declare namespace API {
   type formColumn = {
     title: string;
     dataIndex: string;
-    valueType: string;
-    width: string;
+    valueType:
+      | 'text'
+      | 'password'
+      | 'money'
+      | 'textarea'
+      | 'option'
+      | 'date'
+      | 'dateWeek'
+      | 'dateMonth'
+      | 'dateQuarter'
+      | 'dateYear'
+      | 'dateRange'
+      | 'dateTimeRange'
+      | 'dateTime'
+      | 'time'
+      | 'timeRange'
+      | 'select'
+      | 'checkbox'
+      | 'rate'
+      | 'radio'
+      | 'radioButton'
+      | 'index'
+      | 'indexBorder'
+      | 'progress'
+      | 'percent'
+      | 'digit'
+      | 'digitRange'
+      | 'second'
+      | 'code'
+      | 'jsonCode'
+      | 'avatar'
+      | 'switch'
+      | 'fromNow'
+      | 'image'
+      | 'cascader'
+      | 'treeSelect'
+      | 'color';
+    width: 'sm' | 'md' | 'xl' | 'xs' | 'lg';
     formItemProps: { rules?: { required?: boolean; message?: string }[] };
   };
 
@@ -73,6 +130,11 @@ declare namespace API {
     url: string;
   };
 
+  type formPage = {
+    pageMetadata: pageMetadata;
+    form: form;
+  };
+
   type tablePage = {
     pageMetadata: pageMetadata;
     table: table;
@@ -83,6 +145,21 @@ declare namespace API {
     listData: listData;
   };
 
+  type processPage = {
+    pageMetadata: pageMetadata;
+    processState: Record<string, any>;
+  };
+
+  type htmlPage = {
+    pageMetadata: pageMetadata;
+    html: string;
+  };
+
+  type cardPage = {
+    pageMetadata: pageMetadata;
+    cardList: cardList;
+  };
+
   type pageMetadata = {
     title: string | multiLanguageString;
     url: string;
@@ -90,6 +167,8 @@ declare namespace API {
     pageType: 'tablePage' | 'listPage' | 'stepsFormPage';
     projectionName: string;
   };
+
+  type postItem = true;
 
   type item = {
     data: any[];
@@ -119,13 +198,13 @@ declare namespace API {
     /** Query items by its parent */
     parentId?: string;
     /** The number of items to skip before starting to collect the result set */
-    offset?: number;
+    fluxoffset?: number;
     /** The numbers of items to return */
-    limit?: number;
+    fluxlimit?: number;
     /** Sort key and direction */
-    sort?: sort;
+    fluxsort?: sort;
     /** A search string */
-    search?: string;
+    fluxsearch?: string;
   };
 
   type getItemParams = {
@@ -136,6 +215,12 @@ declare namespace API {
   type updateParams = {
     projectionName: string;
     projectionId: string;
+    transactionId: string;
+  };
+
+  type updateParams = {
+    projectionName: string;
+    registrationId: number;
   };
 
   type createParams = {
@@ -149,5 +234,13 @@ declare namespace API {
 
   type getPageParams = {
     projectionName: string;
+    transactionId?: string;
+    parentId?: string;
+    projectionId?: string;
+    contentId?: string;
+  };
+
+  type getNextPageParams = {
+    registrationId: number;
   };
 }

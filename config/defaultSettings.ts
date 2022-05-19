@@ -6,16 +6,16 @@ const Settings: LayoutSettings & {
 } = {
   navTheme: 'light',
   // 拂晓蓝
-  primaryColor: '#1890ff',
+  primaryColor: '#9D5EA1',
   layout: 'mix',
   contentWidth: 'Fluid',
   fixedHeader: false,
-  fixSiderbar: true,
+  fixSiderbar: false,
   colorWeak: false,
-  title: 'Ant Design Pro',
+  title: 'flux-capacitor',
   pwa: false,
-  logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
-  iconfontUrl: '',
+  logo: 'logo.svg',
+  iconfontUrl: ''
 };
 
 export default Settings;

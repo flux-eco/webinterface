@@ -2,19 +2,19 @@
 /* eslint-disable */
 import { request } from 'umi';
 
-/** list GET /api/v1/query/${param0}/getItemList */
+/** list GET /api/v1/query/${param0}/getItemList/${param1} */
 export async function getItemList(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getItemListParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, ...queryParams } = params;
-  return request<API.itemList>(`/api/v1/query/${param0}/getItemList`, {
+  const { projectionName: param0, parentId: param1, ...queryParams } = params;
+  return request<API.itemList>(`/api/v1/query/${param0}/getItemList/${param1}`, {
     method: 'GET',
     params: {
       ...queryParams,
-      sort: undefined,
-      ...queryParams['sort'],
+      fluxsort: undefined,
+      ...queryParams['fluxsort'],
     },
     ...(options || {}),
   });
@@ -38,11 +38,30 @@ export async function getItem(
 export async function update(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateParams,
-  body: API.item,
+  body: API.postItem,
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, projectionId: param1, ...queryParams } = params;
   return request<any>(`/api/v1/command/${param0}/item/${param1}/updateItem`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    params: { ...queryParams },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** update all corresponding aggregateRoots POST /api/v1/command/${param0}/registrationId/${param1}/storeForm */
+export async function update_2(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.updateParams,
+  body: API.item,
+  options?: { [key: string]: any },
+) {
+  const { projectionName: param0, registrationId: param1, ...queryParams } = params;
+  return request<any>(`/api/v1/command/${param0}/registrationId/${param1}/storeForm`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -101,7 +120,24 @@ export async function getPage(
   options?: { [key: string]: any },
 ) {
   const { projectionName: param0, ...queryParams } = params;
-  return request<API.tablePage | API.listPage>(`/api/v1/query/${param0}/getPage`, {
+  return request<API.tablePage | API.listPage | API.cardPage | API.htmlPage | API.processPage>(
+    `/api/v1/query/${param0}/getPage`,
+    {
+      method: 'GET',
+      params: { ...queryParams },
+      ...(options || {}),
+    },
+  );
+}
+
+/** 此处后端没有提供注释 GET /api/v1/query/${param0}/getNextPage */
+export async function getNextPage(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getNextPageParams,
+  options?: { [key: string]: any },
+) {
+  const { registrationId: param0, ...queryParams } = params;
+  return request<API.formPage>(`/api/v1/query/${param0}/getNextPage`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),
