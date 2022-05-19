@@ -11,8 +11,10 @@ export default () => {
   const [pageMetadata, setPageMetadata] = useState<API.pageMetadata>();
   const [formInputItems, setFormInputItems] = useState<any[]>();
 
+
   const fetchPage = async () => {
-    const page = await fetchFormPage(params.page)
+    const page = await fetchFormPage(params.projectionName)
+
     const columns = page.columns;
     let inputItems = [];
     columns.map(

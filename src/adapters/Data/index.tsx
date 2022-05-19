@@ -1,4 +1,4 @@
-import {getItem, getItemList, update} from "@/services/flux-eco-system/api";
+import {getItem, getItemList, update, create} from "@/services/flux-eco-system/api";
 import {message} from "antd";
 
 
@@ -70,3 +70,20 @@ export const handleUpdate = async (
     return false;
   }
 };
+
+export const handleCreate = async (
+  projectionName: string,
+  properties: any
+) => {
+  try {
+    const createParams = {projectionName};
+    await create(
+      createParams, properties
+    );
+    return true;
+  } catch (error) {
+    message.error('Configuration failed, please try again!');
+    return false;
+  }
+};
+

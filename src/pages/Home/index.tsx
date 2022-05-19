@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {PageContainer} from '@ant-design/pro-layout';
+import ProLayout, {PageContainer} from '@ant-design/pro-layout';
 import {getPageList} from '@/services/flux-eco-system/api';
-import {List} from 'antd';
+import {List, PageHeader} from 'antd';
 import classNames from 'classnames';
 import styles from './style.less'
 import {Card} from 'antd';
+import {Content} from "antd/lib/layout/layout";
 const {Meta} = Card;
 
 const Pages: React.FC = () => {
@@ -29,8 +30,17 @@ const Pages: React.FC = () => {
 
   return (
     <>
-      <PageContainer className={classNames(styles.container)}>
+      <ProLayout
+        siderWidth={0}
+      >
+        <PageHeader
+          ghost={false}
+          title="Home"
+        >
+          <Content style={{ padding: '0 50px' }}>
+
         <List
+          grid={{ gutter: 16, column: 3 }}
           dataSource={currentPageList.data}
           className={classNames(styles.list)}
           renderItem={(page: any) =>
@@ -50,7 +60,9 @@ const Pages: React.FC = () => {
             )
           }>
         </List>
-      </PageContainer>
+          </Content>
+        </PageHeader>
+      </ProLayout>
     </>
   );
 };

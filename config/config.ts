@@ -15,6 +15,7 @@ export default defineConfig({
     hmr: true,
   },
   layout: {
+    name: 'flux-capacitor',
     // https://umijs.org/zh-CN/plugins/plugin-layout
     locale: true,
     siderWidth: 208,

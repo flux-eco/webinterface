@@ -1,10 +1,10 @@
 {
-  "name": "Ant Design Pro",
-  "short_name": "Ant Design Pro",
+  "name": "flux-capacitor",
+  "short_name": "flux-capacitor",
   "display": "standalone",
   "start_url": "./?utm_source=homescreen",
-  "theme_color": "#002140",
-  "background_color": "#001529",
+  "theme_color": "#9D5EA1",
+  "background_color": "#6979B9",
   "icons": [
     {
       "src": "icons/icon-192x192.png",
