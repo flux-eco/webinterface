@@ -15,6 +15,7 @@ export const fetchItemList = async (
       case undefined:
         return await getItemList({
           projectionName: projectionName,
+          parentId: undefined,
           offset: offset,
           limit: limit,
           sort: sort,

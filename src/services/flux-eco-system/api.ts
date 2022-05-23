@@ -2,19 +2,35 @@
 /* eslint-disable */
 import { request } from 'umi';
 
-/** list GET /api/v1/query/${param0}/getItemList/${param1} */
+/** list GET /api/v1/query/${param0}/getCardList */
+export async function getCardList(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getCardListParams,
+  options?: { [key: string]: any },
+) {
+  const { projectionName: param0, ...queryParams } = params;
+  return request<API.cardList>(`/api/v1/query/${param0}/getCardList`, {
+    method: 'GET',
+    params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
+/** list GET /api/v1/query/${param0}/getItemList */
 export async function getItemList(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getItemListParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, parentId: param1, ...queryParams } = params;
-  return request<API.itemList>(`/api/v1/query/${param0}/getItemList/${param1}`, {
+  const { projectionName: param0, ...queryParams } = params;
+  return request<API.itemList>(`/api/v1/query/${param0}/getItemList`, {
     method: 'GET',
     params: {
       ...queryParams,
       fluxsort: undefined,
       ...queryParams['fluxsort'],
+      fluxfilter: undefined,
+      ...queryParams['fluxfilter'],
     },
     ...(options || {}),
   });
@@ -119,8 +135,8 @@ export async function getPage(
   params: API.getPageParams,
   options?: { [key: string]: any },
 ) {
-  const { projectionName: param0, ...queryParams } = params;
-  return request<API.tablePage | API.listPage | API.cardPage | API.htmlPage | API.processPage>(
+  const { pageName: param0, ...queryParams } = params;
+  return request<API.tablePage | API.listPage | API.cardPage | API.htmlPage>(
     `/api/v1/query/${param0}/getPage`,
     {
       method: 'GET',
@@ -137,7 +153,7 @@ export async function getNextPage(
   options?: { [key: string]: any },
 ) {
   const { registrationId: param0, ...queryParams } = params;
-  return request<API.formPage>(`/api/v1/query/${param0}/getNextPage`, {
+  return request<API.processPage>(`/api/v1/query/${param0}/getNextPage`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),

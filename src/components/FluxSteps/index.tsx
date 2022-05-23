@@ -1,24 +1,28 @@
 import {Steps} from "antd";
-import {FluxSchemaFormProps} from "@/components/FluxSchemaForm";
 
 export type FluxStepsProps = {
   currentStepKey: number
   Steps: [{
     title: string,
     description: string
+    key: number
   }]
-  changeStep: ();
+  stepChanged: (key: number) => void;
 }
 
 const { Step } = Steps;
 
 const FluxSteps = (props: FluxStepsProps) => {
+
+  if(props.Steps === undefined) {
+    return <div/>
+  }
   const stepsList = props.Steps.map((StepItem, key) => {
     return (<Step key={key} title={StepItem.title} description={StepItem.description}/>)
   });
 
  return (
-   <Steps current={props.currentStepKey} onChange={props.changeStep()}>
+   <Steps current={props.currentStepKey} onChange={(key: number) => props.stepChanged(key)}>
     {stepsList}
   </Steps>
  );

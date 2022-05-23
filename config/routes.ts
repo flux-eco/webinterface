@@ -1,105 +1,31 @@
 ﻿export default [
   {
-    name: 'ListPage',
-    icon: 'book',
-    path: '/listpage/:page',
-    layout: false,
-    component: './ListPage',
-  },
-  {
-    name: 'HtmlPage',
-    icon: 'book',
-    path: '/htmlPage/:page/:parentId',
-    layout: false,
-    component: './HtmlPage',
-  },
-  {
-    name: 'HtmlPage',
-    icon: 'book',
-    path: '/htmlPage/:page',
-    layout: false,
-    component: './HtmlPage',
-  },
-  {
-    name: 'ListPage',
-    icon: 'book',
-    path: '/listpage/:page/:parentId',
-    layout: false,
-    component: './ListPage',
-  },
-  {
-    name: 'ProcessPage',
-    icon: 'book',
-    path: '/processpage/:page',
-    layout: false,
-    component: './ProcessPage',
-  },
-  {
-    name: 'ProcessPage',
-    icon: 'book',
-    path: '/processpage/:page/:transactionId',
-    layout: false,
-    component: './ProcessPage',
-  },
-  {
-    name: 'FormPage',
-    icon: 'book',
-    path: '/formpage/:page',
-    layout: false,
-    component: './FormPage',
-  },
-  {
-    name: 'FormPage',
-    icon: 'book',
-    path: '/formpage/:page/:progressId',
-    layout: false,
-    component: './FormPage',
-  },
-  {
-    name: 'CardPage',
-    icon: 'book',
-    path: '/cardpage/:page',
-    layout: false,
-    component: './CardPage',
-  },
-  {
-    name: 'CardPage',
-    icon: 'book',
-    path: '/cardpage/:page/:parentId',
-    layout: false,
-    component: './CardPage',
-  },
-  {
-    name: 'TablePage',
-    icon: 'book',
-    path: '/tablepage/:page',
-    layout: false,
-    component: './TablePage',
-  },
-  {
-    name: 'TablePage',
-    icon: 'book',
-    path: '/tablepage/:page/:parentId',
-    layout: false,
-    component: './TablePage',
-  },
-  {
-    name: 'StepsFormPage',
-    icon: 'book',
-    path: '/stepsformpage/:page',
-    layout: false,
-    component: './StepsFormPage',
-  },
-  {
-    name: 'Home',
-    icon: 'book',
-    path: '/home',
-    layout: false,
-    component: './Home',
-  },
-  {
     path: '/',
     redirect: '/home',
+  },
+  {
+    path: '/:pageName',
+    icon: 'book',
+    component: './FluxPage',
+    access: 'canRead'
+  },
+  {
+    path: '/:pageName/:id',
+    icon: 'book',
+    component: './FluxPage',
+    access: 'canRead'
+  },
+  {
+    path: '/:parentPageName/:parentId/:page',
+    icon: 'book',
+    component: './FluxPage',
+    access: 'canRead'
+  },
+  {
+    path: '/:parentPageName/:parentId/:page/:id',
+    icon: 'book',
+    component: './FluxPage',
+    access: 'canRead'
   },
   {
     component: './404',

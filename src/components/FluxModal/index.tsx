@@ -1,6 +1,4 @@
-import {Layout, Modal} from "antd";
-import {PageContainer} from "@ant-design/pro-layout";
-import {Content} from "antd/lib/layout/layout";
+import {Modal} from "antd";
 
 export type FluxModalProps = {
   title: string;
