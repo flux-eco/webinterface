@@ -5,16 +5,17 @@ const Settings: LayoutSettings & {
   logo?: string;
 } = {
   navTheme: 'light',
-  // 拂晓蓝
+  layout: 'top',
+  menuRender: undefined,
+  splitMenus: false,
   primaryColor: '#9D5EA1',
-  layout: 'mix',
   contentWidth: 'Fluid',
   fixedHeader: false,
   fixSiderbar: false,
   colorWeak: false,
   title: 'flux-capacitor',
   pwa: false,
-  logo: 'logo.svg',
+  logo: '/logo.svg',
   iconfontUrl: ''
 };
 

@@ -1,15 +1,18 @@
 declare namespace API {
   type form = {
     formTitle: { dataIndex?: string };
-    columns: formColumn[];
+    sections?: { title?: string; formType?: 'schemaForm'; columns?: formColumn[] };
   };
 
   type cardList = {
-    cards?: card[];
+    /** total Modules */
+    total?: number;
+    success?: boolean;
+    data?: card[];
   };
 
   type card = {
-    title?: string;
+    title: string;
     description?: string;
     link?: string;
     image?: string;
@@ -17,24 +20,25 @@ declare namespace API {
     actions?: action[];
   };
 
-  type listData = {
-    mappings?: {
+  type fluxListProps = {
+    mappings: {
       title?: dataPointer;
       subtitle?: dataPointer;
       description?: dataPointer;
       image?: dataPointer;
       link?: dataPointer;
     };
-    actions?: action[];
+    actions: action[];
   };
 
   type action = {
     title: string;
     key: string;
-    actionType?: 'backendAction' | 'frontendAction' | 'link';
+    actionType: 'backendAction' | 'openForm' | 'createIliasCourse' | 'deleteItem' | 'link';
     icon?: 'open' | 'edit' | 'setting';
     rules?: rule[];
     operation: string;
+    form?: form;
   };
 
   type rule = {
@@ -46,9 +50,7 @@ declare namespace API {
   type table = {
     search: boolean;
     columns: tableColumn[];
-    showForm?: form;
-    createForm?: form;
-    editForm?: form;
+    toolbarActions?: action[];
     itemActions?: action[];
   };
 
@@ -142,7 +144,7 @@ declare namespace API {
 
   type listPage = {
     pageMetadata: pageMetadata;
-    listData: listData;
+    fluxListProps: fluxListProps;
   };
 
   type processPage = {
@@ -151,10 +153,14 @@ declare namespace API {
   };
 
   type htmlPage = {
-    key: string;
     pageMetadata: pageMetadata;
     html: string;
     steps?: step[];
+  };
+
+  type cardPage = {
+    pageMetadata: pageMetadata;
+    cardList: cardList;
   };
 
   type step = {
@@ -163,16 +169,11 @@ declare namespace API {
     key?: number;
   };
 
-  type cardPage = {
-    pageMetadata: pageMetadata;
-    cardList: cardList;
-  };
-
   type pageMetadata = {
-    title: string | multiLanguageString;
+    title: string;
     url: string;
     avatar: string;
-    pageType: 'tablePage' | 'listPage' | 'stepsFormPage';
+    pageType: 'tablePage' | 'listPage' | 'htmlPage' | 'cardPage' | 'stepsFormPage';
     projectionName: string;
   };
 
@@ -201,10 +202,12 @@ declare namespace API {
     success?: boolean;
   };
 
+  type getCardListParams = {
+    projectionName: string;
+  };
+
   type getItemListParams = {
     projectionName: string;
-    /** Query items by its parent */
-    parentId?: string;
     /** The number of items to skip before starting to collect the result set */
     fluxoffset?: number;
     /** The numbers of items to return */
@@ -213,6 +216,8 @@ declare namespace API {
     fluxsort?: sort;
     /** A search string */
     fluxsearch?: string;
+    /** a filter object */
+    fluxfilter?: Record<string, any>;
   };
 
   type getItemParams = {
@@ -241,7 +246,7 @@ declare namespace API {
   };
 
   type getPageParams = {
-    projectionName: string;
+    pageName: string;
     transactionId?: string;
     parentId?: string;
     projectionId?: string;

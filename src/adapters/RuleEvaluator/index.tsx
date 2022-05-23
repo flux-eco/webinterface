@@ -1,7 +1,7 @@
 
 export function evaluateRules(
   rules: API.rule[],
-  item: API.item
+  item: []
 ):boolean {
   let evaluationResult = false;
   rules.forEach((rule: API.rule) => {

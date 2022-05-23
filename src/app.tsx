@@ -1,14 +1,10 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
 import { PageLoading } from '@ant-design/pro-layout';
 import type { RunTimeLayoutConfig } from 'umi';
-import { history, Link } from 'umi';
-// import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
-import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = '/home';
 
-/** 获取用户信息比较慢的时候会展示一个 loading */
+/** loading */
 export const initialStateConfig = {
   loading: <PageLoading />,
 };
@@ -18,29 +14,8 @@ export const initialStateConfig = {
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: undefined;
-  fetchUserInfo?: () => Promise<undefined>;
 }> {
-  const fetchUserInfo = async () => {
-    try {
-      // const msg = await queryCurrentUser();
-      return undefined;
-    } catch (error) {
-      // history.push(loginPath);
-    }
-    return undefined;
-  };
-  // 如果是登录页面，不执行
-  if (history.location.pathname !== loginPath) {
-    const currentUser = await fetchUserInfo();
-    return {
-      fetchUserInfo,
-      currentUser,
-      settings: {},
-    };
-  }
   return {
-    fetchUserInfo,
     settings: {},
   };
 }
@@ -49,15 +24,42 @@ export async function getInitialState(): Promise<{
 export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
     onPageChange: () => {
-      const { location } = history;
+      //const { location } = history;
       // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
+      /*if (!initialState?.currentUser && location.pathname !== loginPath) {
         // history.push(loginPath);
-      }
+      }*/
     },
     menuHeaderRender: undefined,
+    /*menuDataRender: () => {return [
+      {
+        path: '/dashboard',
+        name: 'dashboard',
+        icon: 'dashboard',
+        children: [
+          {
+            path: '/dashboard/analysis',
+            name: 'analysis',
+            exact: true,
+          },
+          {
+            path: '/dashboard/monitor',
+            name: 'monitor',
+            exact: true,
+          },
+          {
+            path: '/dashboard/workplace',
+            name: 'workplace',
+            exact: true,
+          },
+        ],
+      },
+      // ....
+    ];
+    },*/
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
+    rightRender: () => {return ''}, //reset top right corner
     ...initialState?.settings,
   };
 };

@@ -15,25 +15,23 @@ export default defineConfig({
     hmr: true,
   },
   layout: {
-    name: 'flux-capacitor',
     // https://umijs.org/zh-CN/plugins/plugin-layout
-    locale: true,
-    siderWidth: 208,
+    locale: false,
     ...defaultSettings,
   },
   // https://umijs.org/zh-CN/plugins/plugin-locale
   locale: {
     // default zh-CN
-    default: 'de_DE',
+    default: 'de-DE',
     antd: true,
     // default true, when it is true, will use `navigator.language` overwrite default
-    baseNavigator: true,
+    baseNavigator: false,
   },
   dynamicImport: {
     loading: '@ant-design/pro-layout/es/PageLoading',
   },
   targets: {
-    ie: 11,
+    chrome: 90, firefox: 90, safari: 14, edge: 90, ios: 14
   },
   // umi routes: https://umijs.org/docs/routing
   routes,
@@ -71,6 +69,7 @@ export default defineConfig({
   mfsu: {},
   webpack5: {},
   exportStatic: {},
-  base: '/flux-webinterface-code/',
-  publicPath: '/flux-webinterface-code/'
+  base: '/',
+  publicPath: '/',
+
 });

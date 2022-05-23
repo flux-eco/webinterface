@@ -12,7 +12,7 @@ export const fetchTablePage = async (projectionName: string): Promise<API.tableP
 export const fetchCardPage = async (projectionName: string): Promise<API.cardPage> => {
   return await getPage({projectionName: projectionName}) as API.cardPage
 }
-export const fetchHtmlPage = async (projectionName: string, projectionId: string, contentId: string): Promise<API.htmlPage> => {
+export const fetchHtmlPage = async (projectionName: string, projectionId: string, contentId: number): Promise<API.htmlPage> => {
   return await getPage({projectionName: projectionName, projectionId: projectionId, contentId: contentId}) as API.htmlPage
 }
 export const fetchProcessPage = async (projectionName: string, transactionId: string): Promise<API.processPage> => {

@@ -6,13 +6,14 @@ export type FluxStepsProps = {
     title: string,
     description: string
     key: number
-  }]|undefined
-  stepChanged: (key: number ) => void;
+  }]
+  stepChanged: (key: number) => void;
 }
 
 const { Step } = Steps;
 
 const FluxSteps = (props: FluxStepsProps) => {
+
   if(props.Steps === undefined) {
     return <div/>
   }

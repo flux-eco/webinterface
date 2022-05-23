@@ -1,14 +1,25 @@
 import {Button, message} from 'antd';
-import React from 'react';
 import {deleteItem} from "@/services/flux-eco-system/api";
 
-const handleRemove = async (projectionName: string, projectionId: string) => {
+const handleRemove = async (
+  projectionName: string,
+  projectionId: string,
+  reloadTable: () => void,
+  setLoadingState: (state: boolean) => void
+  ) => {
   try {
+    setLoadingState(true)
     await deleteItem({
       projectionName: projectionName,
       projectionId: projectionId
-    });
-    message.success('Deleted successfully and will refresh soon');
+    }).then(
+      () => { setTimeout(function(){
+        reloadTable() //eventual consistency
+        setLoadingState(false)
+      }, 1000)}
+    ).then(() => {
+      message.success('Deleted successfully and will refresh soon')
+    })
     return true;
   } catch (error) {
     message.error('Delete failed, please try again');
@@ -20,6 +31,8 @@ export type DeleteFormProps = {
   projectionName: string;
   projectionId: string;
   setIsModalVisible: (visible: boolean) => void;
+  reloadTable: () => void,
+  setLoadingState: (state: boolean) => void
 }
 
 const DeleteForm = (props: DeleteFormProps) => (
@@ -29,7 +42,9 @@ const DeleteForm = (props: DeleteFormProps) => (
     <Button key="delete" type='primary' danger onClick={async () => {
       const success = await handleRemove(
         props.projectionName,
-        props.projectionId
+        props.projectionId,
+        props.reloadTable,
+        props.setLoadingState
       );
       if (success) {
         props.setIsModalVisible(false);
